@@ -1,0 +1,22 @@
+Version V3.0
+
+'
+' Alternate Animations
+'
+AAprefix jff
+'
+' Crawling
+'
+AASet _mtidle 1
+AASet _mt 1
+AASet _mtx 1
+AASet _sneakidle 1
+AAset _sneakmt 1
+
+'
+' Sitting on Floor
+'
+fu -a JFSitFloor_Enter JF_SitFloorEnter.hkx
++ JFSitFloor_EnterInstant JF_SitFloorEnterInstant.hkx
++ -a JFSitFloor_Exit JF_SitFloorExit.hkx
+
