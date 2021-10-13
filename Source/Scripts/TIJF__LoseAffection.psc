@@ -7,7 +7,6 @@ Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
 Core.LoseAffection()
-Core.SDP(false)
 ;END CODE
 EndFunction
 ;END FRAGMENT
