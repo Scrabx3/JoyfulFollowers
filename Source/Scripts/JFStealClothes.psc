@@ -1,8 +1,7 @@
-Scriptname JFStealClothes extends ObjectReference
+Scriptname JFStealClothes extends ObjectReference Conditional
 
 ; ------------------------------------- Property
 JFMCM Property MCM Auto
-JFCore Property Core Auto
 Quest Property JF_Stolen Auto
 Actor Property PlayerRef Auto
 ReferenceAlias Property JoyFolRef Auto
@@ -10,48 +9,63 @@ FormList Property JF_Stolen_Plants Auto
 FormList Property JF_Stolen_Daedrics Auto
 Keyword Property DaedricArtifact Auto
 MiscObject Property Gold001 Auto
+ImageSpaceModifier Property FadeToBlackImod Auto
+ImageSpaceModifier Property FadeToBlackHoldImod Auto
+ImageSpaceModifier Property FadeToBlackBackImot Auto
 ; ------------------------------------- Variables
-int BaseChance
+int chance
 bool bLostItems = false
 ; ------------------------------------- Functions
 bool Function StripPlayer()
+  ; SE exclusive: Check if there is something to strip :^)
+  If(SKSE.GetVersion() > 2.0)
+    Armor ar = PlayerRef.GetEquippedArmorInSlot(0x4)
+    If(ar == none)
+      return false
+    EndIf
+  EndIf
   ;Find Location to store the players clothes
   ObjectReference Tree = Game.FindRandomReferenceOfAnyTypeInListFromRef(JF_Stolen_Plants, PlayerRef, 4096.0)
   If(Tree == None)
     ;if we dont find a location, abandon
-    If(MCM.bDeNo == true)
+    If(MCM.bDebug == true)
       Debug.Notification("Stolen: No Location found")
     EndIf
     return false
   EndIf
-  Core.FadeBlack()
+  Actor follower = JoyfulFollowers.GetFollower()
+  FadeToBlackImod.Apply()
+  FadeToBlackImod.PopTo(FadeToBlackHoldImod)
   ;Getting the Satchel ready
   PlayerRef.RemoveAllItems(Self, true)
   ;Move the JoyFol to the storing Location cause Skyrim has no "SnapToNavmesh" Function. Maybe I really should just mod FO4
-  Core.JoyFol.MoveTo(Tree, 15.0, 5.0, 100.0)
+  follower.MoveTo(Tree, 15.0, 5.0, 100.0)
   ;Let game physics do physic things. 1 second to have the JoyFol hit the ground. Cant think of any other way to ensure the satchel isnt floating (or worse, below the ground)
   Utility.Wait(1)
   ;Now move the satchel and wait real quick before moving the JoyFol back to PLayer location. Just to be sure the satchel is placed properly. Then enable the satchel and let the Quest start .. Yay (essays)
-  MoveTo(Core.JoyFol, 0.0, 0.0, 0.0, false)
+  MoveTo(follower, 0.0, 0.0, 0.0, false)
   Utility.Wait(0.25)
   Enable()
-  Core.JoyFol.MoveTo(PlayerRef, -20.0, -20.0)
+  follower.MoveTo(PlayerRef, -20.0, -20.0)
   bLostItems = false
   ;Polling for clothes getting stolen
-  If(MCM.bSCSteal == true)
+  If(MCM.bStolenSteal == true)
     RegisterForSingleUpdateGameTime(1)
-    BaseChance = 1
+    chance = 1
   EndIf
   return true
 EndFunction
+Function RemoveBlackScreen()
+  FadeToBlackHoldImod.PopTo(FadeToBlackBackImot)
+EndFunction
 
-;Throw everything that isnt armor/weaponry(?) back into the players inventory
+;Throw everything that isnt armor/weaponry back into the players inventory
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
   If(akBaseItem as armor || akBaseItem as weapon)
     If(akBaseItem.HasKeyword(DaedricArtifact))
       JF_Stolen_Daedrics.AddForm(akBaseItem)
     EndIf
-    Return
+    return
   EndIf
   Utility.Wait(0.05)
   RemoveItem(akBaseItem, aiItemCount, true, PlayerRef)
@@ -60,8 +74,7 @@ EndEvent
 ;Every ingame hour theres a chance the players armors & weapons are stolen
 Event OnUpdateGameTime()
   ;Base Chance: 1 -> 2 -> 4 -> 8 -> 16 -> 32 -> 64 -> 128
-  int Chance = Utility.RandomInt(1,100)
-  If(BaseChance >= Chance)
+  If(Utility.RandomInt(1, 100) < chance)
     RemoveAllItems()
     Utility.Wait(0.25)
     ;Put Daedric Items back into satchel
@@ -73,62 +86,47 @@ Event OnUpdateGameTime()
     ;Quest now effectively ended but I give the player another 3 real time minutes to figure that out themselves
     bLostItems = true
     RegisterForSingleUpdate(180)
-    If(MCM.bDeNo == true)
-      Debug.Notification("Clothes were stolen")
-    EndIf
-    Return
+    return
   EndIf
-  BaseChance *= 2
+  chance *= 2
   RegisterForSingleUpdateGameTime(1)
 EndEvent
 
 ;This closes the Quest unless this event is called through polling and the player has Daedrics in his pockets and "Worse End" disabled, in which case the Player gets another 5 Minutes to recover their Artefacts
 Event OnUpdate()
-  ;bLostItems can only ever be true if the Bad End is enabled and the clothes were stolen. Not sure why I checked for Quest Stages here. Im stupid
-  If(bLostItems == true && MCM.bSCWorse == true || JF_Stolen_Daedrics.GetSize() == 0)
-    Debug.MessageBox("You suddenly feel a shiver running down your spine. Its like something just told you that your lost gear is gone for good.")
-    JF_Stolen.SetStage(400)
+  ;bLostItems can only ever be true if the Bad End is enabled and the clothes were stolen
+  If(bLostItems == true)
     bLostItems = false
-  ElseIf(bLostItems == true)
-    Debug.MessageBox("You suddenly feel a shiver running down your spine. Its like something just told you that your lost gear is gone for good. \n Altough you're sure no one would be foolish enough to touch a Daedric Artefact. Still, you should probably hurry.")
     JF_Stolen.SetStage(400)
-    RegisterForSingleUpdate(500)
-    bLostItems = false
-    Return
+    If(MCM.bStolenBadEnd == true || JF_Stolen_Daedrics.GetSize() == 0)
+      Debug.MessageBox("You suddenly feel a shiver running down your spine. Its like something just told you that your lost gear is gone for good.")
+    Else
+      Debug.MessageBox("You suddenly feel a shiver running down your spine. Its like something just told you that your lost gear is gone for good.\nAltough you're sure no one would be foolish enough to touch a Daedric Artefact, you should probably hurry.")
+      RegisterForSingleUpdate(500)
+      Return
+    EndIf
   EndIf
   Disable()
 EndEvent
 
 Function RegisterForSl()
-  RegisterForModEvent("HookAnimationEnding_StolenSex", "StolenAfterSex")
+  RegisterForModEvent("HookAnimationEnding_JFStolen", "StolenAfterSex")
 EndFunction
-
 Event StolenAfterSex(int tid, bool HasPlayer)
-	sslThreadController Thread = Core.SL.GetController(tid)
-	Actor[] Acteurs = Thread.Positions
-	If(Acteurs[1] == Core.JoyFol || Acteurs[0] == Core.JoyFol)
-    ;Agreeing to serve the JF, roleplaying a doggo
-		If(JF_Stolen.GetStage() == 40)
-      ;Initial proposal
-	    JF_Stolen.SetStage(100)
-      Core.Util.FPetPlay = true
-			; SDP(true)
-	  Else
-      ;After denying "I changed my mind". Dog Collar Ending
-	    JF_Stolen.SetStage(115)
-	    JF_Stolen.SetObjectiveDisplayed(100)
-	    ; SDP(true, true)
-	  EndIf
-  ElseIf(Core.JoyFol.HasLoS(PlayerRef) == true)
-  	;Pet Dog Serving while Follower is watching
-		JF_Stolen.SetStage(210)
-		; SDP(true)
-    Core.Util.FBestiality = true
-	Else
-    ;Pet Dog Serving while Follower isnt watching
+  JFMainEvents ev = JFMainEvents.Singleton()
+  Actor follower = JoyfulFollowers.GetFollower()
+	Actor[] act = JFAnimStarter.GetSceneActors(tid)
+	If(act.find(follower) > -1)
+    ; "Go down and Bark"
+    JF_Stolen.SetStage(100)
+  Else
+  	; Horny Pet Dog
+    If(follower.HasLoS(PlayerRef))
+      JFMainEvents.Singleton().Bestiality = true
+    EndIf
 		JF_Stolen.SetStage(210)
 	EndIf
-	UnregisterForModEvent("HookAnimationEnding_StolenSex")
+	UnregisterForModEvent("HookAnimationEnding_JFStolen")
 EndEvent
 
 Event OnActivate(ObjectReference akActionRef)
@@ -137,27 +135,21 @@ Event OnActivate(ObjectReference akActionRef)
   ElseIf(bLostItems == true)
     ;Player finds the Chest after theyve been stolen but before OnUpdate fires
     JF_Stolen.SetStage(400)
-  ElseIf(JF_Stolen.GetStage() == 100)
-    ;Player is lead to the Satchel by the Follower after Begging/Persuation
+  EndIf
+  int stage = JF_Stolen.GetStage()
+  If(stage == 100 || stage == 130)
+    ; Player is lead to the Satchel by the Follower after Begging/Persuation
     JF_Stolen.SetStage(500)
-    Core.GainAffection(true)
-ElseIf(Core.JoyFol.GetActorValue("WaitingForPlayer") == 1)
-  ;Player tells the player to wait before opening the satchel
-    JF_Stolen.SetStage(700)
-    ; Core.SDP(false, true)
-    Core.LoseAffection()
-; ====================================================================
-  ElseIf(JF_Stolen.GetStage() == 115)
-    ;Dog Collar Aftermath. Find the chest in exchange for wearing a collar
-    JF_Stolen.SetStage(900)
-  ElseIf(JF_Stolen.GetStage() == 120)
-    ;Punishment Game Aftermath. This Stage mimics 600 but leads into a Punishment Game after
+  ElseIf(stage == 120)
+    ; Player begged & gets lead to the satchel in exchange for a game afterwards
+    ; This is essentially Stage 500 with a little something on top
     JF_Stolen.SetStage(950)
-; ======================================================================
+  ElseIf(JoyfulFollowers.GetFollower().GetActorValue("WaitingForPlayer") == 1)
+    ;Player tells the player to wait before opening the satchel
+    JF_Stolen.SetStage(700)
   Else
     ;Default Ending. If none of the above apply, this should. Find chest while follower is near
     JF_Stolen.SetStage(600)
-    Core.GainAffection()
   EndIf
   ;Start a timer to disable the Satchel after 2min
   bLostItems = false

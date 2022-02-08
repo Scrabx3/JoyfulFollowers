@@ -1,11 +1,10 @@
 Scriptname JFTraitor extends Quest Conditional
 
 ; -------------------------- Properties
-JFCore Property Core Auto
 JFMCM Property MCM Auto
 
 Faction Property JF_Traitor_RebelFaction Auto
-Actor[] Property Thralls Auto
+Actor[] Property Thralls Auto ; 0 is player, everyone after are potential partners
 Scene Property EndScene Auto
 Scene Property EndSceneCycle Auto
 
@@ -19,29 +18,27 @@ ReferenceAlias Property Harkon = none Auto
 ReferenceAlias Property Serana = none Auto
 
 ; -------------------------- Vaiables
-bool Property doAddultStuff = false Auto Hidden Conditional
-bool Property ignoredJF = true Auto Hidden Conditional
-bool Property cycling = false Auto Hidden
-int Property ScenarioToPlay = 0 Auto Hidden Conditional
-; Which Actor is used to turn the Player: 0 = Harkon, 1 = Serana, 2 = JoyFol
+bool Property doAddultStuff = false Auto Hidden Conditional ; enable/disable adult content
+bool Property ignoredJF = true Auto Hidden Conditional ; how often the Player denied the JF & waited additional time
+bool Property cycling = false Auto Hidden ; player ignored the JF at least once
+int Property ScenarioToPlay = 0 Auto Hidden Conditional ; Actor to turn the Player (0 > Harkon // 1 > Serana // 2 > Follower)
 int timesUsed = 0
 bool stillWaiting = false
+String tags = "aggressive, rough"
 
 ; -------------------------- Code
 Event OnStoryScript(Keyword akKeyword, Location akLocation, ObjectReference akRef1, ObjectReference akRef2, int aiValue1, int aiValue2)
-  MCM.bCooldown = false
+  JoyfulFollowers.LockTimeout()
   If(akLocation == DLC1VampireCastleGuildhallLocation)
-    doAddultStuff = MCM.bTraitorEnabAdult
     ScenarioToPlay = GetScenarioVolkihar()
-  elseIf(MCM.bBestiality)
-    ;If Event Loc is Dawnguard HQ, check for Bestiality before adjusting the Flag
-    doAddultStuff = MCM.bTraitorEnabAdult
+  else
+    ; If Event Loc is Dawnguard HQ, only play adult scenes when bestiality is allowed
+    doAddultStuff = MCM.bCreatureContent
   EndIf
-  ; Setting Door Ownership for the Player thing stuff
-  ; !Doesnt work + for simplicity reasons disallowing Player to active anything instead
+  ; Lock the Door so the player cant leave
   PrisonDoor.SetLockLevel(255)
   PrisonDoor.SetFactionOwner(JF_Traitor_RebelFaction)
-  ;Disabling Doors so the Player cant run away mwahaha
+  ; Disabling Doors so the Player cant run away mwahaha
   int Count = ExitDoors.Length
   While(Count)
     Count -= 1
@@ -52,16 +49,16 @@ EndEvent
 
 int Function GetScenarioVolkihar()
   If(!DLC1VQ06.IsCompleted() && Harkon != none)
-    return 0
-  elseIf(Serana != none && Core.JoyFol != Serana.GetReference() as Actor)
-    return 1
+    return 0 ; Harkon is alive and not yet betrayed, turn back Sequence will address him as the solution
+  elseIf(Serana != none && JoyfulFollowers.GetFollower() != Serana.GetReference())
+    return 1 ; Serana is in the castle but is not the Follower
   else
-    return 2
+    return 2 ; Serana is in the castle
   EndIf
 EndFunction
 
 Function EndQuest()
-  Core.JoyFol.SetAV("WaitingForPlayer", 0)
+  JoyfulFollowers.GetFollower().SetAV("WaitingForPlayer", 0)
   PrisonDoor.SetLockLevel(0)
   PrisonDoor.SetFactionOwner(none)
   int Count = ExitDoors.Length
@@ -71,7 +68,7 @@ Function EndQuest()
     ExitDoors[Count].Lock(false)
   EndWhile
   SetStage(10)
-  MCM.Cooldown()
+  JoyfulFollowers.UnlockTimeout(true)
 endFunction
 
 Function StartWaiting()
@@ -83,12 +80,11 @@ Function StartWaiting()
       timesUsed = 0
       StartChainRape()
     EndIf
-  else  ; If were looping this, cut down waiting time in half
+  else  ; if looping, cut down waiting time in half
     stillWaiting = true
     TimeScale.Value = MCM.iTraitorScale
     RegisterForSingleUpdateGameTime(Utility.RandomInt(3, 7))
     If(doAddultStuff)
-      timesUsed = Math.Ceiling(timesUsed * 0.5)
       StartChainRape()
     EndIf
   EndIf
@@ -107,25 +103,25 @@ Event OnUpdateGameTime()
 EndEvent
 
 Function StartChainRape()
-  If(Core.StartSexTraitor(Thralls) != -1)
-    RegisterForModEvent("HookAnimationEnding_Traitor", "TraitorAfterSex")
-  else
-    Debug.MessageBox("Something went wrong with Scene starting, falling back to Default Scenario..")
+  If(JFAnimStarter.StartScene(thralls, tags, "loving", false, thralls[0], "JFTraitor") > -1)
+    RegisterForModEvent("HookAnimationEnding_JFTraitor", "TraitorAfterSex")
+  Else
+    Debug.MessageBox("<JF Traitor Event>\nAn Error occured while starting the Animation. Scenes will be disabled for the remaining duration of the Quest.")
     doAddultStuff = false
-  endIf
+  EndIf
 endFunction
 
 Event TraitorAfterSex(int tid, bool hasPlayer)
+  timesUsed += 1
 	If(stillWaiting)
-    timesUsed += 1
     Utility.Wait(10)
-    If(timesUsed > 7)
-      Core.StartSexTraitor(Thralls, true)
-    else
-      Core.StartSexTraitor(Thralls)
+    If(timesUsed == 7)
+      tags = "necro, necrophilia, aggressive"
+    EndIf
+    If(JFAnimStarter.StartScene(thralls, tags, "loving", false, thralls[0], "JFTraitor") == -1)
+      Debug.MessageBox("<JF Traitor Event>\nAn Error occured while starting the Animation. Scenes will be disabled for the remaining duration of the Quest.")
     EndIf
   else
-    UnregisterForModEvent("HookAnimationEnding_Traitor")
     If(!cycling)
       EndScene.Start()
     else

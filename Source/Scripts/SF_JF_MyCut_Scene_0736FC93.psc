@@ -2,11 +2,11 @@
 ;NEXT FRAGMENT INDEX 6
 Scriptname SF_JF_MyCut_Scene_0736FC93 Extends Scene Hidden
 
-;BEGIN FRAGMENT Fragment_3
-Function Fragment_3()
+;BEGIN FRAGMENT Fragment_4
+Function Fragment_4()
 ;BEGIN CODE
-;This starts after Time has passed. Spawn JF back in
-JoyFol.GetReference().Enable()
+JoyfulFollowers.AddAffection(2)
+JoyfulFollowers.UnlockTimeout(true)
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -19,11 +19,11 @@ Debug.SendAnimationEvent(JoyFol.GetActorRef(), "StaggerStart")
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_4
-Function Fragment_4()
+;BEGIN FRAGMENT Fragment_3
+Function Fragment_3()
 ;BEGIN CODE
-Core.GainAffection(silent = true)
-(GetOwningQuest() as JFMyCut).MCM.Cooldown()
+;This starts after Time has passed. Spawn JF back in
+JoyFol.GetReference().Enable()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -31,9 +31,3 @@ EndFunction
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 
 ReferenceAlias Property JoyFol  Auto  
-
-JFMCM Property MCM  Auto  
-
-Actor Property PlayerRef  Auto  
-
-JFCore Property Core  Auto  

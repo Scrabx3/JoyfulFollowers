@@ -2,24 +2,9 @@
 ;NEXT FRAGMENT INDEX 5
 Scriptname QF_JF_Traitor_1_074B3E2F Extends Quest Hidden
 
-;BEGIN ALIAS PROPERTY Falion
-;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_Falion Auto
-;END ALIAS PROPERTY
-
-;BEGIN ALIAS PROPERTY RebelStarter
-;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_RebelStarter Auto
-;END ALIAS PROPERTY
-
 ;BEGIN ALIAS PROPERTY Player
 ;ALIAS PROPERTY TYPE ReferenceAlias
 ReferenceAlias Property Alias_Player Auto
-;END ALIAS PROPERTY
-
-;BEGIN ALIAS PROPERTY JoyFol
-;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_JoyFol Auto
 ;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY Rebel1
@@ -32,10 +17,39 @@ ReferenceAlias Property Alias_Rebel1 Auto
 ReferenceAlias Property Alias_Rebel0 Auto
 ;END ALIAS PROPERTY
 
-;BEGIN FRAGMENT Fragment_3
-Function Fragment_3()
+;BEGIN ALIAS PROPERTY Falion
+;ALIAS PROPERTY TYPE ReferenceAlias
+ReferenceAlias Property Alias_Falion Auto
+;END ALIAS PROPERTY
+
+;BEGIN ALIAS PROPERTY RebelStarter
+;ALIAS PROPERTY TYPE ReferenceAlias
+ReferenceAlias Property Alias_RebelStarter Auto
+;END ALIAS PROPERTY
+
+;BEGIN ALIAS PROPERTY JoyFol
+;ALIAS PROPERTY TYPE ReferenceAlias
+ReferenceAlias Property Alias_JoyFol Auto
+;END ALIAS PROPERTY
+
+;BEGIN FRAGMENT Fragment_1
+Function Fragment_1()
 ;BEGIN CODE
-SetObjectiveDisplayed(0)
+SetObjectiveDisplayed(10)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_4
+Function Fragment_4()
+;BEGIN CODE
+; enable collision plains to avoid the Player jumping out of the Troll Pen..
+
+int Count = CollisionPlanes.Length
+While Count
+  Count -= 1
+  CollisionPlanes[Count].EnableNoWait()
+endWhile
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -56,29 +70,16 @@ While Count
   Count -= 1
   CollisionPlanes[Count].DisableNoWait()
 endWhile
-Core.GainAffection(silent = true)
+
+JoyfulFollowers.AddAffection(3)
 ;END CODE
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_4
-Function Fragment_4()
+;BEGIN FRAGMENT Fragment_3
+Function Fragment_3()
 ;BEGIN CODE
-; enable collision plains to avoid the Player jumping out of the Troll Pen..
-
-int Count = CollisionPlanes.Length
-While Count
-  Count -= 1
-  CollisionPlanes[Count].EnableNoWait()
-endWhile
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_1
-Function Fragment_1()
-;BEGIN CODE
-SetObjectiveDisplayed(10)
+SetObjectiveDisplayed(0)
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -86,5 +87,3 @@ EndFunction
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 
 ObjectReference[] Property CollisionPlanes  Auto  
-
-JFCore Property Core  Auto  

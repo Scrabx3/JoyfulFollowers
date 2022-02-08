@@ -5,7 +5,7 @@ Scriptname SF_JF_MyCut_Start_073F374A Extends Scene Hidden
 ;BEGIN FRAGMENT Fragment_0
 Function Fragment_0()
 ;BEGIN CODE
-RegisterForSingleUpdate(120)
+JoyfulFollowers.LockTimeout()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -14,14 +14,21 @@ EndFunction
 Function Fragment_2()
 ;BEGIN CODE
 If(GetOwningQuest().GetStage() < 10)
-	GetOwningQuest().Stop()
+  GetOwningQuest().Stop()
+  JoyfulFollowers.UnlockTimeout(true)
 Else
-	Actor JF = JoyFol.GetReference() as Actor
-
-	; Disable the Follower & Register for Update in the Mainscript to start the respawn Scene
-	JoyFol.GetActorRef().Disable()
-	JFMyCut Cut = GetOwningQuest() as JFMyCut
-	Cut.RegisterForSingleUpdateGameTime(Utility.RandomInt(6, Cut.MCM.iMaxTimeOut))
+  ; Disable the Follower & Register for Update in the Mainscript to start the respawn Scene
+  JoyFol.GetReference().Disable()
+  ; Follower should be back at no later than 19.30, Events starts no no earler than 10 and latest at 16.15
+  ; Min duration is thus 3h, max Duration 19.30 - currenthour
+  float timeaway
+  float upper = 19.5 - GameHour.Value
+  If(upper < 0.25) ; to avoid anything weird in case the Player waits until after 19.30
+    timeaway = 3.0
+  Else
+    timeaway = Utility.RandomFloat(3.0, upper)
+  EndIf
+  GetOwningQuest().RegisterForSingleUpdateGameTime(timeaway)
 EndIf
 ;END CODE
 EndFunction
@@ -31,15 +38,4 @@ EndFunction
 
 ReferenceAlias Property JoyFol  Auto  
 
-Actor Property PlayerRef  Auto  
-
-Event OnUpdate()
-	If(JoyFol.GetReference().IsInDialogueWithPlayer())
-		; if Follower is currently talking with Player we check again a while later as that may be the Cut Dialogue ..
-		RegisterForSingleUpdate(10)
-		return
-	ElseIf(GetOwningQuest().GetStage() < 10)
-		; If the Player isnt talking to the Follower && MyCuts Starting Dialogue didnt SetStage to 10 (Player gave no money to follower), close the Quest
-		GetOwningQuest().Stop()
-	EndIf
-EndEvent
+GlobalVariable Property GameHour Auto

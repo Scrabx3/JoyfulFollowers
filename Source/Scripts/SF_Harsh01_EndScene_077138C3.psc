@@ -1,16 +1,19 @@
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
-;NEXT FRAGMENT INDEX 3
+;NEXT FRAGMENT INDEX 4
 Scriptname SF_Harsh01_EndScene_077138C3 Extends Scene Hidden
+
+;BEGIN FRAGMENT Fragment_3
+Function Fragment_3()
+;BEGIN CODE
+GetOwningQuest().SetStage(100)
+;END CODE
+EndFunction
+;END FRAGMENT
 
 ;BEGIN FRAGMENT Fragment_1
 Function Fragment_1()
 ;BEGIN CODE
-Quest myQ = GetOwningQuest()
-If(myQ.GetStage() == 35)
-	myQ.SetStage(200)
-else
-	myQ.SetStage(100)
-EndIf
+GetOwningQuest().SetStage(100)
 ;END CODE
 EndFunction
 ;END FRAGMENT

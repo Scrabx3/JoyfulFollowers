@@ -1,143 +1,84 @@
 Scriptname JFBelowCollege extends Quest Conditional
 
 ; ------------------------------------- Property
-JFCore Property Core Auto
-JFMCM Property MCM Auto
 ReferenceAlias Property RewardAlias Auto
 Scene Property PassedOut Auto
-
 Actor Property PlayerRef Auto
 ActorBase Property FlameAtronachNH Auto ;NonHostile
 ActorBase Property FrostAtrnoachNH Auto
 ActorBase Property StormAtronachNH Auto
-
 Weapon Property RewardFlameStaff Auto
 Weapon Property RewardFrostStaff Auto
 Weapon Property RewardStormStaff Auto
 ObjectReference[] Property RitualWalls Auto
 ;Ingredients for Ritual
+Ingredient Property FireSalts Auto
+Ingredient Property FrostSalts Auto
+Ingredient Property VoidSalts Auto
 MiscObject Property GemDiamond Auto
 MiscObject Property GemDiamondFlawless Auto
 Soulgem Property SoulgemGreaterFilled Auto
 Soulgem Property SoulgemGrandFilled Auto
-Ingredient Property FireSalts Auto
-Ingredient Property FrostSalts Auto
-Ingredient Property VoidSalts Auto
 ;Atronach Forge Stuff
 ObjectReference Property summonFXpoint Auto
 {Where we place the summoning FX cloud}
 Activator Property summonFX Auto
 {Point to a fake summoning cloud activator}
-objectReference  property createPoint auto
-{Marker where we place created items}
-
+GlobalVariable Property AtroKills Auto
 ; ------------------------------------- Variables
 ; store whatever we summoned last time to help clean up dead references
-Actor lastSummonedCreature = none
+ActorBase[] partners
+Actor[] ritualactors
 ;Reward
 Weapon RewardStaff
-;0 - lightning, 1 - fire, 2 - frost
-int staffChoice
 int timesUsed = 0
-
-bool Property canListenPassedOut = false Auto Hidden Conditional ;Used in "Passed Out" Scene
 ; ------------------------------------- Code
+; IDEA: Add Support for 2~5p animations(?)
+; TODO: Dialogue for final act of Below College
+
 ; =============================
 ; ========== Stage 0 ==========
 ; =============================
 Function TakeItems()
-  ; Variables to build up String
-  string DiamondName
-  string SoulGemName
-  int VoidSaltsTaken
-  int FireSaltsTaken
-  int FrostSaltsTaken
   ; Get Number Salts for Reward
-  int voidSalt = PlayerRef.GetItemCount(VoidSalts)
-  int fireSalt = PlayerRef.GetItemCount(FireSalts)
-  int frostSalt = PlayerRef.GetItemCount(FrostSalts)
-  If(voidSalt > 5 && fireSalt > 5 && frostSalt > 5)
-    staffChoice = Utility.RandomInt(0, 2)
-  ElseIf(voidSalt > 5 && fireSalt > 5)
-    staffChoice = Utility.RandomInt(0, 1)
-  ElseIf(fireSalt > 5 && frostSalt > 5)
-    staffChoice = Utility.RandomInt(1, 2)
-  ElseIf(voidSalt > 5 && frostSalt > 5)
-    If(Utility.RandomInt(0, 1) == 0)
-      staffChoice = 0
-    else
-      staffChoice = 2
-    EndIf
-  ElseIf(voidSalt > 5)
-    staffChoice = 0
-  ElseIf(fireSalt > 5)
-    staffChoice = 1
+  bool[] invsalt = new bool[3]
+  invsalt[0] = PlayerRef.GetItemCount(FireSalts) >= 3 ; FireSalts
+  invsalt[1] = PlayerRef.GetItemCount(FrostSalts) >= 3 ; FrostSalts
+  invsalt[2] = PlayerRef.GetItemCount(VoidSalts) >= 3 ; VoidSalts
+  int n = Utility.RandomInt(0, 2)
+  While(invsalt[n] == false) ; At least one of them is true, otherwise the Event cant start
+    n = Utility.RandomInt(0, 2)
+  EndWhile
+  ritualactors = new Actor[2]
+  partners = new ActorBase[3]
+  If(n == 0)
+    PlayerRef.RemoveItem(FireSalts, 3)
+    RewardStaff = RewardFlameStaff
+    partners[0] = FlameAtronachNH
+    partners[1] = StormAtronachNH
+    partners[2] = FrostAtrnoachNH
+  ElseIf(n == 1)
+    PlayerRef.RemoveItem(FrostSalts, 3)
+    RewardStaff = RewardFrostStaff
+    partners[0] = FrostAtrnoachNH
+    partners[1] = FlameAtronachNH
+    partners[2] = StormAtronachNH
   Else
-    staffChoice = 2
-  EndIf
-  ; Remove Items & Identify Reward Weapon
-  If(staffChoice == 0)
-    VoidSaltsTaken = 7
-    playerRef.RemoveItem(VoidSalts, 7)
-    FireSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(FireSalts, FireSaltsTaken)
-    FrostSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(FrostSalts, FrostSaltsTaken)
-    int WeaponChoice = Utility.RandomInt(0, 99)
-    If(WeaponChoice < 20)
-      RewardStaff = RewardFrostStaff
-    ElseIf(WeaponChoice >= 80)
-      RewardStaff = RewardFlameStaff
-    else
-      RewardStaff = RewardStormStaff
-    EndIf
-  ElseIf(staffChoice == 1)
-    FireSaltsTaken = 7
-    playerRef.RemoveItem(FireSalts, 7)
-    VoidSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(VoidSalts, VoidSaltsTaken)
-    FrostSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(FrostSalts, FrostSaltsTaken)
-    int WeaponChoice = Utility.RandomInt(0, 99)
-    If(WeaponChoice < 20)
-      RewardStaff = RewardFrostStaff
-    ElseIf(WeaponChoice >= 80)
-      RewardStaff = RewardStormStaff
-    else
-      RewardStaff = RewardFlameStaff
-    EndIf
-  else
-    FrostSaltsTaken = 7
-    playerRef.RemoveItem(FrostSalts, 7)
-    VoidSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(VoidSalts, VoidSaltsTaken)
-    FireSaltsTaken = Utility.RandomInt(1, 3)
-    playerRef.RemoveItem(FireSalts, FireSaltsTaken)
-    int WeaponChoice = Utility.RandomInt(0, 99)
-    If(WeaponChoice < 20)
-      RewardStaff = RewardFrostStaff
-    ElseIf(WeaponChoice >= 80)
-      RewardStaff = RewardFlameStaff
-    else
-      RewardStaff = RewardStormStaff
-    EndIf
+    PlayerRef.RemoveItem(VoidSalts, 3)
+    RewardStaff = RewardStormStaff
+    partners[0] = StormAtronachNH
+    partners[1] = FrostAtrnoachNH
+    partners[2] = FlameAtronachNH
   EndIf
   If(PlayerRef.GetItemCount(SoulgemGrandFilled) > 0)
-    SoulGemName = SoulgemGrandFilled.GetName()
     PlayerRef.RemoveItem(SoulgemGrandFilled)
-  else
-    SoulGemName = SoulgemGreaterFilled.GetName()
+  Else
     PlayerRef.RemoveItem(SoulgemGreaterFilled)
   EndIf
   If(PlayerRef.GetItemCount(GemDiamondFlawless) > 0)
-    DiamondName = GemDiamondFlawless.GetName()
     PlayerRef.RemoveItem(GemDiamondFlawless)
-  else
-    DiamondName = GemDiamond.GetName()
+  Else
     PlayerRef.RemoveItem(GemDiamond)
-  EndIf
-  If(MCM.bBCShowTaken)
-    Debug.MessageBox("Items Taken:\nFire Salts: " + FireSaltsTaken + "\nFrost Salts: " + FrostSaltsTaken + "\nVoid Salts: " + VoidSaltsTaken + "\n" + SoulGemName + ": 1\n" + DiamondName + ": 1")
   EndIf
   SetStage(30)
 EndFunction
@@ -147,20 +88,51 @@ EndFunction
 ; ==============================
 Function SleepReady()
   RegisterForSleep()
-  MCM.bCooldown = false
 endFunction
 
-int sleepStart
-Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
-  sleepStart = Game.QueryStat("Hours Slept")
-EndEvent
-
 Event OnSleepStop(bool abInterrupted)
-  int sleepTime = (Game.QueryStat("Hours Slept") - sleepStart)
-  If(sleepTime >= 6)
+  ;/ Below College has 3 Event paths:
+    1. Player used by Atroonachs
+    2. Follower used by Atroonachs
+    3. Atronachs go Berserk
+
+    I assume the Player will prefer 1 over 2 over 3
+    65 over 25 over 10?
+  /;
+  If(GetStage() >= 50)
+    return
+  EndIf
+  int scn = Utility.RandomInt(0, 99)
+  If(scn < 65)
+    ritualactors[0] = PlayerRef
     SetStage(50)
+  ElseIf(scn < 80)
+    Actor fol = JoyfulFollowers.GetFollower()
+    RegisterForSingleLOSGain(PlayerRef, fol)
+    ritualactors[0] = fol
+    SetStage(200)
+    fol.MoveTo(summonFXpoint)
+    ActivateForge()
+  Else
+    AtroKills.Value = 0
+    UpdateCurrentInstanceGlobal(AtroKills)
+    SetStage(400)
   EndIf
 EndEvent
+
+Event OnGainLOS(Actor akViewer, ObjectReference akTarget)
+  Utility.Wait(1.5)
+  SetStage(210)
+EndEvent
+
+Function UpdateAtroKills()
+  AtroKills.Value += 1
+  UpdateCurrentInstanceGlobal(AtroKills)
+  SetObjectiveDisplayed(400, true, true)
+  If(AtroKills.Value == 8)
+    SetStage(410)
+  EndIf
+EndFunction
 
 ; ==============================
 ; ========== Stage 60 ==========
@@ -170,89 +142,52 @@ Function ActivateForge()
   RitualWalls[1].EnableNoWait(true)
   RitualWalls[2].Enable(true)
   Utility.Wait(5)
-  RegisterForModEvent("HookAnimationEnding_BelowCollege", "NextSummon")
+  RegisterForModEvent("HookAnimationEnd_JFBelowCollege", "NextSummon")
   timesUsed = 0
   SummonNextCreature()
 EndFunction
 
 Event NextSummon(int tid, bool hasPlayer)
   timesUsed += 1
-  If(timesUsed < 3)
-    Utility.Wait(Utility.RandomInt(1, 4))
+  Utility.Wait(0.4)
+  Debug.SendAnimationEvent(ritualactors[0], "bleedoutstart")
+  ; Cleanup the previous partners
+  ritualactors[1].kill()
+  Utility.Wait(1.5)
+  ritualactors[1].disable()
+  ritualactors[1].delete()
+  Utility.Wait(Utility.RandomFloat(1, 3.5))
+  ; Check for another round or quit
+  If(Utility.RandomFloat(0, 99) < (137 - 12 * timesUsed)) ; Min 3, max 11 (5%)
     SummonNextCreature()
-  ElseIf(timesUsed == 3 && Utility.RandomInt(1, 100) <= 80)
-    Utility.Wait(Utility.RandomInt(1, 4))
-    SummonNextCreature()
-  ElseIf(timesUsed == 4 && Utility.RandomInt(1, 100) <= 50)
-    Utility.Wait(Utility.RandomInt(1, 4))
-    SummonNextCreature()
-  ; ElseIf(timesUsed == 5 && Utility.RandomInt(1, 100) <= 40)
-  ;   Utility.Wait(Utility.RandomInt(1, 4))
-  ;   SummonNextCreature()
-  ElseIf(timesUsed == 6 && Utility.RandomInt(1, 100) <= 20)
-    Utility.Wait(Utility.RandomInt(1, 4))
-    SummonNextCreature()
-  else
-    UnregisterForModEvent("HookAnimationEnding_BelowCollege")
-    lastSummonedCreature.kill()
-    Utility.Wait(1.5)
-    lastSummonedCreature.disable()
-    lastSummonedCreature.delete()
+  Else
+    UnregisterForModEvent("HookAnimationEnd_JFBelowCollege")
     EndRitual()
+    Utility.Wait(2)
+    Debug.SendAnimationEvent(ritualactors[0], "bleedoutstop")
   EndIf
 endEvent
 
+; roll a new atronach partner & start a Scene
 Function SummonNextCreature()
-  If(MCM.bDeNo)
-    Debug.Notification("Summoning creature..")
-  EndIf
-  ;Clean up the previously summoned Creature before summoning a new one
-  If(lastSummonedCreature)
-    lastSummonedCreature.kill()
-    Utility.Wait(1.5)
-    lastSummonedCreature.disable()
-    lastSummonedCreature.delete()
-  EndIf
-  ;Figure out what Creature to summon based on the Staff that is going to be the reward
-  int CreatureToSummon = Utility.RandomInt(0, 99)
   summonFXpoint.placeatme(summonFX)
-  objectReference newRef
   Utility.Wait(0.33)
-  If(staffChoice == 0) ;0 - lightning, 1 - fire, 2 - frost
-    If(CreatureToSummon < 20)
-      newRef = createPoint.PlaceAtMe(FlameAtronachNH)
-    ElseIf(CreatureToSummon >= 80)
-      newRef = createPoint.PlaceAtMe(FrostAtrnoachNH)
-    else
-      newRef = createPoint.PlaceAtMe(StormAtronachNH)
-    EndIf
-  ElseIf(staffChoice == 1)
-    If(CreatureToSummon < 30)
-      newRef = createPoint.PlaceAtMe(StormAtronachNH)
-    ElseIf(CreatureToSummon >= 70)
-      newRef = createPoint.PlaceAtMe(FrostAtrnoachNH)
-    else
-      newRef = createPoint.PlaceAtMe(FlameAtronachNH)
-    EndIf
-  else
-    If(CreatureToSummon < 30)
-      newRef = createPoint.PlaceAtMe(StormAtronachNH)
-    ElseIf(CreatureToSummon >= 70)
-      newRef = createPoint.PlaceAtMe(FlameAtronachNH)
-    else
-      newRef = createPoint.PlaceAtMe(FrostAtrnoachNH)
-    EndIf
+  int c = Utility.RandomInt(0, 99)
+  If(c < 60)
+    ritualactors[1] = summonFXpoint.PlaceAtMe(partners[0]) as Actor
+  ElseIf(c < 80)
+    ritualactors[1] = summonFXpoint.PlaceAtMe(partners[1]) as Actor
+  Else
+    ritualactors[1] = summonFXpoint.PlaceAtMe(partners[2]) as Actor
   EndIf
-  lastSummonedCreature = newRef as Actor
-  If(Core.StartSexBelowCollege(lastSummonedCreature) == -1)
-    Debug.Notification("Failed to start Scene.. skipping")
+  If(JFAnimStarter.StartScene(ritualactors, hook = "JFBelowCollege") == -1)
+    Debug.Notification("<JF BC> Failed to start Scene.. skipping")
     Utility.Wait(3)
-    NextSummon(777, true)
-  endIf
-endFunction
+    NextSummon(0, ritualactors[0] == PlayerRef)
+  EndIf
+EndFunction
 
 Function EndRitual()
-  Utility.Wait(Utility.RandomInt(3, 5))
   RitualWalls[0].DisableNoWait(true)
   RitualWalls[1].DisableNoWait(true)
   RitualWalls[2].Disable(true)
@@ -260,5 +195,9 @@ Function EndRitual()
   summonFXpoint.placeatme(summonFX)
   Utility.Wait(0.33)
   RewardAlias.ForceRefTo(summonFXpoint.placeatme(RewardStaff))
-  SetStage(80)
+  If(GetStage() == 210)
+    SetStage(220)
+  Else
+    SetStage(80)
+  EndIf
 endFunction

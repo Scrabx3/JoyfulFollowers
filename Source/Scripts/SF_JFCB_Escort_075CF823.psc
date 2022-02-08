@@ -2,23 +2,11 @@
 ;NEXT FRAGMENT INDEX 13
 Scriptname SF_JFCB_Escort_075CF823 Extends Scene Hidden
 
-;BEGIN FRAGMENT Fragment_6
-Function Fragment_6()
+;BEGIN FRAGMENT Fragment_7
+Function Fragment_7()
 ;BEGIN CODE
-Game.EnablePlayerControls()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_1
-Function Fragment_1()
-;BEGIN CODE
-Game.DisablePlayerControls(ablooking = true, abCamSwitch = true)
-Game.ForceFirstPerson()
-PlayerRef.MoveTo(PlayerBedAM)
-JoyFol.GetReference().MoveTo(ChamberAM)
-FadeToBlackHoldImod.PopTo(Woozy)
-PlayerRef.PlayIdle(WakeUp)
+JoyFol.GetActorReference().SetAV("WaitingForPlayer", 0)
+GetOwningQuest().SetStage(1100)
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -45,17 +33,27 @@ Function Fragment_0()
 ;BEGIN CODE
 FadeToBlackHoldImod.Apply()
 JoyFol.GetActorReference().SetAV("WaitingForPlayer", 1)
-(GetOwningQuest() as JFBelowCollege).Core.Fatigue.SetValue(0)
 ;END CODE
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_7
-Function Fragment_7()
+;BEGIN FRAGMENT Fragment_6
+Function Fragment_6()
 ;BEGIN CODE
-JoyFol.GetActorReference().SetAV("WaitingForPlayer", 0)
-GetOwningQuest().CompleteQuest()
-(GetOwningQuest() as JFBelowCollege).MCM.Cooldown()
+Game.EnablePlayerControls()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_1
+Function Fragment_1()
+;BEGIN CODE
+Game.DisablePlayerControls(ablooking = true, abCamSwitch = true)
+Game.ForceFirstPerson()
+PlayerRef.MoveTo(PlayerBedAM)
+JoyFol.GetReference().MoveTo(ChamberAM)
+FadeToBlackHoldImod.PopTo(Woozy)
+PlayerRef.PlayIdle(WakeUp)
 ;END CODE
 EndFunction
 ;END FRAGMENT

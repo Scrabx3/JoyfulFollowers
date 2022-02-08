@@ -41,11 +41,6 @@ bool Property FIsGreedy = false Auto Hidden Conditional
 ; =========================================================
 ;/Tokens are integers that stack up to a certain number first before they do anything. Its essentially a flag that needs to "level up" first before its considered true
 /;
-; ---------------------- Leave Tokens
-; Collect more than 7 of them to unlock the Follower Leave Event
-; Lose 1 Token every 127 Ticks (1 inGame Month)
-; INTERNAL ONLY
-int Property TLeaveToken = 0 Auto Hidden Conditional
 
 ; ---------------------- Marry Tokens
 ; Collect 5 to unlock a Follower iniated Marriage Request at Lv5
@@ -120,7 +115,6 @@ Function ResetMe()
   FIsCruel = false
   FIsGreedy = false
   ;Tokens
-  TLeaveToken = 0
   TMarryToken = 0
   ; TChasteToken = 0
   ; TBreederToken = 0

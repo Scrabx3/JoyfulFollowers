@@ -2,44 +2,6 @@
 ;NEXT FRAGMENT INDEX 25
 Scriptname SF_JFCB_PassedOut_075C55CA Extends Scene Hidden
 
-;BEGIN FRAGMENT Fragment_1
-Function Fragment_1()
-;BEGIN CODE
-Game.DisablePlayerControls(ablooking = true, abCamSwitch = true)
-Game.ForceFirstPerson()
-PlayerRef.MoveTo(PlayerBedAM)
-JoyFol.GetReference().MoveTo(FollowersChairAM)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_23
-Function Fragment_23()
-;BEGIN CODE
-FadeToBlackHoldImod.PopTo(Woozy)
-PlayerRef.PlayIdle(WakeUp)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_10
-Function Fragment_10()
-;BEGIN CODE
-FadeToBlackHoldImod.Apply()
-Game.ForceFirstPerson()
-(GetOwningQuest() as JFBelowCollege).Core.Fatigue.SetValue(0)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_16
-Function Fragment_16()
-;BEGIN CODE
-(GetOwningQuest() as JFBelowCollege).MCM.Cooldown()
-;END CODE
-EndFunction
-;END FRAGMENT
-
 ;BEGIN FRAGMENT Fragment_15
 Function Fragment_15()
 ;BEGIN CODE
@@ -61,19 +23,39 @@ PlayerRef.PlayIdle(WakeUp)
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_0
-Function Fragment_0()
+;BEGIN FRAGMENT Fragment_23
+Function Fragment_23()
 ;BEGIN CODE
-(GetOwningQuest() as JFBelowCollege).canListenPassedOut = true
+FadeToBlackHoldImod.PopTo(Woozy)
+PlayerRef.PlayIdle(WakeUp)
 ;END CODE
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_13
-Function Fragment_13()
+;BEGIN FRAGMENT Fragment_16
+Function Fragment_16()
 ;BEGIN CODE
-GetOwningQuest().CompleteQuest()
-getOwningQuest().stop()
+GetOwningQuest().SetStage(1200)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_1
+Function Fragment_1()
+;BEGIN CODE
+Game.DisablePlayerControls(ablooking = true, abCamSwitch = true)
+Game.ForceFirstPerson()
+PlayerRef.MoveTo(PlayerBedAM)
+JoyFol.GetReference().MoveTo(FollowersChairAM)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_10
+Function Fragment_10()
+;BEGIN CODE
+FadeToBlackHoldImod.Apply()
+Game.ForceFirstPerson()
 ;END CODE
 EndFunction
 ;END FRAGMENT
