@@ -55,7 +55,7 @@ EndFunction
 
 ;/ =======================================================================
   ============================= EVENT DATA =============================
-  This stores Information the Follower collects about the Player. Characteristics, preferences, interestes, etcpp. An important aspect not to ignore is that those flags are by the follower interpretation. That means that to set one of those flags, the player doesnt have to specifically state so (altough thats certainly an option), its enough to imply that "it might be" or make the follower interesting
+  This stores Information the Follower collects about the Player. Characteristics, preferences, interestes, etcpp. Those flags represent the followers interpretation. That means that to set one of those flags, the player doesnt have to specifically state so (altough thats certainly an option), its enough to imply that "it might be" or make the follower interesting. Misunderstandings happen, right?
   If you need a new value here notify me. Dont edit this Script yourself to avoid compatibility issues and to ensure that everyone has access to the same Information for their Events
 ======================================================================= /;
 
@@ -150,10 +150,32 @@ bool Property EPresentGuessedGem = false Auto Hidden Conditional
   =============================== STORAGE ===============================
   Below Methods are utility to manage follower dismissal. Don't call this yourself
 ======================================================================= /;
-; TODO: implement
 Function StoreData(Form object)
+  StorageUtil.SetIntValue(object, "_Veto", _Veto as int)
+  StorageUtil.SetFloatValue(object, "Submission", Submission)
+
+  StorageUtil.SetIntValue(object, "FIsCruel", FIsCruel as int)
+  StorageUtil.SetIntValue(object, "FIsGreedy", FIsGreedy as int)
+  StorageUtil.SetIntValue(object, "Violated", Violated as int)
+  StorageUtil.SetIntValue(object, "Groupsex", Groupsex as int)
+  StorageUtil.SetIntValue(object, "Bestiality", Bestiality as int)
+  StorageUtil.SetIntValue(object, "Masochism", Masochism as int)
+  StorageUtil.SetIntValue(object, "Bondage", Bondage as int)
+  StorageUtil.SetIntValue(object, "Humiliation", Humiliation as int)
+  StorageUtil.SetIntValue(object, "PetPlay", PetPlay as int)
 EndFunction
 
-; TODO: implement
 Function LoadData(Form object)
+  _Veto = StorageUtil.GetIntValue(object, "_Veto")
+  Submission = StorageUtil.GetFloatValue(object, "Submission")
+
+  FIsCruel = StorageUtil.GetIntValue(object, "FIsCruel")
+  FIsGreedy = StorageUtil.GetIntValue(object, "FIsGreedy")
+  Violated = StorageUtil.GetIntValue(object, "Violated")
+  Groupsex = StorageUtil.GetIntValue(object, "Groupsex")
+  Bestiality = StorageUtil.GetIntValue(object, "Bestiality")
+  Masochism = StorageUtil.GetIntValue(object, "Masochism")
+  Bondage = StorageUtil.GetIntValue(object, "Bondage")
+  Humiliation = StorageUtil.GetIntValue(object, "Humiliation")
+  PetPlay = StorageUtil.GetIntValue(object, "PetPlay")
 EndFunction
