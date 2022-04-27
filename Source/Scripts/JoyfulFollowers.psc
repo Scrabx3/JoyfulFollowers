@@ -15,7 +15,8 @@ Actor Function GetFollower() global
 EndFunction
 
 ; =========================================
-; @return: The gem type the Follower prefers
+; @return: The gem type the Follower prefers or -1 if no follower is with the player
+;          GemID: 0 Diamond >> 1 Emerald >> 2 Sapphire >> 3 Ruby >> 4 Amethyst
 ; =========================================
 int Function GetFavGem() global
   return StorageUtil.GetIntValue(GetFollower(), "jffavgem", -1)
@@ -49,7 +50,7 @@ EndFunction
 
 ;/ =======================================================================
   =============================== TIMEOUT ================================
-  Cooldown behaves slightly differently in JF compared to other mods with such a Feature. Here we do not use a Timer to put Events on hold and instead define a point in time (in GameDaysPassed) at which Events are allowed to happen again, like so:
+  Cooldown defines a point in time (in GameDaysPassed) at which Events are allowed to happen again, like so:
     EventsAllowed = GameDaysPassed - LastEventTime + Cooldown_Timeout > 0
   To use this Conditions in the Creationkit, a new Variable is defined called "_Timeout" stored in "JFMainEvents.psc"
   Timeout is defined as: (LastEventTime + Cooldown_Timeout) and allows you to check for Cooldowns in CK Conditions like so:
@@ -67,8 +68,7 @@ EndFunction
 
 ; =========================================
 ; Lock Cooldown. Will overwrite SetTimeout() until UnlockCooldown() is called
-; Internally this will set Timeout to 3.4e38 (thats a 34 with 37 0's), making it impossible to reach without console use
-; Fun Fact: The Supernova will happen in less than 7e-27% of the playtime necessary to reach this value. The supernova will happen in 7~8 billion years
+; Internally this will set Timeout to 3.4e38 (MAX_FLOAT), making it impossible to reach without console use
 ; =========================================
 Function LockTimeout() global
   JFMainEvents.Singleton().LockTimeout()
@@ -77,7 +77,7 @@ EndFunction
 ; =========================================
 ; Unlock Cooldown
 ; ---
-; @initialize: Should Cooldown be initialized? If false, Timeout will be set to GameDaysPassed
+; @initialize: Should Cooldown be initialized? If true, Timeout will be set as if you called "SetTimeout()" right after this call
 ; =========================================
 Function UnlockTimeout(bool initialize) global
   JFMainEvents.Singleton().UnlockTimeout(initialize)
@@ -100,7 +100,6 @@ EndFunction
     • The Location Parameter is always filled with the Players current Location
   Script Event -> Joyful Followers_Script
     |--> SourceHit: Called when the Player hits the Follower multiple times
-      *SourceHit is primarily Severity Centered
               |--> Event Data: Player Location | Follower | none | Severety | 0
     |--> SourcePriority: Called before any other Script Event (except SourceHit)
       *does not offer any differentiation. Utilizing Priority Events will have you disctinct Source and Affection Conditions yourself
