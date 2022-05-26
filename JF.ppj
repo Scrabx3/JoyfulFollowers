@@ -11,7 +11,7 @@
         <Variable Name="ThisProject" Value="."/>
         <Variable Name="Rel" Value=".\.releases"/>
         <Variable Name="MO2" Value=".."/>
-        <Variable Name="Ver" Value="0.B5"/>
+        <Variable Name="Ver" Value="0.5.2"/>
     </Variables>
     <Imports>
         <Import>@ThisProject\Source\Scripts</Import>
@@ -46,16 +46,17 @@
     <ZipFiles Output="@Rel">
         <ZipFile Name="@ModName @Ver" RootDir="@ThisProject" Compression="deflate">
             <Include>JoyfulFollowers.esp</Include>
+            <Include>Interface</Include>
             <Include>meshes</Include>
             <Include>Scripts</Include>
             <Include>Seq</Include>
             <Include>Sound</Include>
             <Include>Source</Include>
             <Include>textures</Include>
-            <Include>LICENSE</Include>
         </ZipFile>
         <ZipFile Name="@ModName @Ver LE" RootDir="@ThisProject" Compression="deflate">
             <Include>JoyfulFollowers.esp</Include>
+            <Include>Interface</Include>
             <Include Path="meshes\actors\character\animations\JoyfulFollowers">meshesLE\actors\character\animations\JoyfulFollowers</Include>
             <Include Path="meshes\actors\character\behaviors">meshesLE\actors\character\behaviors</Include>
             <Include Path="meshes\actors\character\FaceGenData\FaceGeom\JoyfulFollowers.esp">meshesLE\actors\character\FaceGenData\FaceGeom\JoyfulFollowers.esp</Include>
@@ -65,7 +66,6 @@
             <Include>Sound</Include>
             <Include>Source</Include>
             <Include>textures</Include>
-            <Include>LICENSE</Include>
         </ZipFile>
     </ZipFiles>
 </PapyrusProject>
