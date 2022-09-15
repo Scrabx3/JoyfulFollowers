@@ -16,7 +16,7 @@ EndFunction
 
 ; =========================================
 ; @return: The gem type the Follower prefers or -1 if no follower is with the player
-;          GemID: 0 Diamond >> 1 Emerald >> 2 Sapphire >> 3 Ruby >> 4 Amethyst
+;          GemID: 0 Diamond | 1 Emerald | 2 Sapphire | 3 Ruby | 4 Amethyst
 ; =========================================
 int Function GetFavGem() global
   return StorageUtil.GetIntValue(GetFollower(), "jffavgem", -1)
@@ -151,10 +151,10 @@ EndFunction
 ; ; --- 
 ; @return: if a Quest managed to start
 ; =========================================
-bool Function PriorityEvent(ObjectReference akRef, int aiValue1 = 0, int aiValue2 = 0, Form akSource = none)
+bool Function PriorityEvent(ObjectReference akRef = none, int aiValue1 = 0, int aiValue2 = 0)
   Keyword k = Keyword.GetKeyword("JF_EventPriority")
   bool started = k.SendStoryEventAndWait(Game.GetPlayer().GetCurrentLocation(), GetFollower(), akRef, aiValue1, aiValue2)
-  Debug.Trace("[JF] Priority Event Call >> successful = " + started + " <> " + akSource)
+  Debug.Trace("[JF] Priority Event Call >> successful = " + started)
   return started
 EndFunction
 

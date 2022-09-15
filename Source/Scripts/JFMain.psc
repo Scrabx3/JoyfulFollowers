@@ -10,6 +10,20 @@ Actor Property CurrentFollower
   EndFunction
 EndProperty
 
+; =================================== Util Stuff
+JFMain Function Get() global
+	return Quest.GetQuest("JF_Main") as JFMain
+EndFunction
+
+Function FadeToBlack()
+	FadeToBlackImod.Apply()
+	Utility.Wait(2.0)
+	FadeToBlackImod.PopTo(FadeToBlackHoldImod)
+EndFunction
+Function FadeBack()
+	FadeToBlackHoldImod.PopTo(FadeToBlackBackImod)
+EndFunction
+
 ; ===================================
 JFMCM Property MCM Auto
 JFPlayerScr Property PlScr Auto
@@ -17,10 +31,13 @@ Faction Property LockoutFaction Auto
 GlobalVariable Property GameDaysPassed Auto
 GlobalVariable Property Debt Auto
 GlobalVariable Property FavGem Auto
-{0 > Diamond /// 1 > Emeralds /// 2 > Sapphire /// 3 > Ruby /// 4 > Amethyst}
+{0 Diamond | 1 Emeralds | 2 Sapphire| | 3 Ruby | 4 Amethyst}
 Keyword Property EventTick Auto
 Keyword PRoperty EventSleep Auto
 MiscObject Property Gold001 Auto
+ImageSpaceModifier Property FadeToBlackImod Auto
+ImageSpaceModifier Property FadeToBlackHoldImod Auto
+ImageSpaceModifier Property FadeToBlackBackImod Auto
 ; ===================================
 ; ===================================
 Function Maintenance()

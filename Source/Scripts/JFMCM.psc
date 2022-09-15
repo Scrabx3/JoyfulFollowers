@@ -21,6 +21,7 @@ float Property fTimeoutTime = 24.0 Auto Hidden
 bool Property bStolenSteal = true Auto Hidden
 bool Property bStolenBadEnd = false Auto Hidden
 float Property fPuppyDur = 9.5 Auto Hidden
+GlobalVariable Property PuppyDurGlobal Auto
 int Property iTraitorScale = 60 Auto Hidden
 bool Property bHelpingHand = true Auto Hidden Conditional
 ; --- Debug
@@ -262,6 +263,7 @@ Event OnSliderAcceptST(Float afValue)
 	ElseIf(op[0] == "puppydur")
 		fPuppyDur = afValue
 		SetSliderOptionValueST(fPuppyDur, "{1}h")
+		PuppyDurGlobal.Value = fPuppyDur
 	ElseIf(op[0] == "traitorscale")
 		iTraitorScale = afValue as int
 		SetSliderOptionValueST(iTraitorScale, "{0}")

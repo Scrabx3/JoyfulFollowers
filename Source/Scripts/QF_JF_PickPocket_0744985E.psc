@@ -29,19 +29,12 @@ EndFunction
 ;BEGIN FRAGMENT Fragment_5
 Function Fragment_5()
 ;BEGIN CODE
-SetObjectiveCompleted(20)
+CompleteAllObjectives()
 JoyfulFollowers.AddAffection(2)
 JoyfulFollowers.UnlockTimeout(true)
 
 CompleteQuest()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_2
-Function Fragment_2()
-;BEGIN CODE
-Alias_JoyFol.GetActorReference().EvaluatePackage()
+Stop()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -51,6 +44,14 @@ Function Fragment_0()
 ;BEGIN CODE
 SetObjectiveDisplayed(10)
 SetActive()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_2
+Function Fragment_2()
+;BEGIN CODE
+Alias_JoyFol.GetActorReference().EvaluatePackage()
 ;END CODE
 EndFunction
 ;END FRAGMENT
