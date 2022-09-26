@@ -15,6 +15,30 @@ JFMain Function Get() global
 	return Quest.GetQuest("JF_Main") as JFMain
 EndFunction
 
+int Function GetFromWeight(int[] aiWeights) global
+	int sum = GetSum(aiWeights)
+	If sum == 0
+		return 0
+	EndIf
+  int this = Utility.RandomInt(1, sum)
+  int limit = 0
+  int n = 0
+  While(limit < this)
+    limit += aiWeights[n]
+    n += 1
+  EndWhile
+  return n
+EndFunction
+int Function GetSum(int[] aiWeights) global
+	int ret = 0
+	int i = 0
+  While(i < aiWeights.length)
+    ret += aiWeights[i]
+    i += 1
+  EndWhile
+	return ret
+EndFunction
+
 Function FadeToBlack()
 	FadeToBlackImod.Apply()
 	Utility.Wait(2.0)
