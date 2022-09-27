@@ -12,7 +12,6 @@ If(JF_Stolen_HornyDog.Show() == 0)
   act[0] = Game.GetPlayer()
   act[1] = akSpeaker
   JFAnimStarter.StartScene(act, "doggy", hook = "JFStolen")
-  Steal.RegisterForSl()
 EndIf
 ;END CODE
 EndFunction
@@ -22,4 +21,3 @@ EndFunction
 
 Message Property JF_Stolen_HornyDog  Auto  
 
-JFStealClothes  Property Steal  Auto  

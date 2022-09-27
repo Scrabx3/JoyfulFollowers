@@ -9,6 +9,7 @@ EndFunction
 
 ;/ =======================================================================
   ============================== TIMEOUT ===============================
+  See JoyfulFollowers.psc for Documentation (and Wrappers)
 ======================================================================= /;
 GlobalVariable Property GameDaysPassed Auto
 JFMCM Property MCM Auto
@@ -20,10 +21,9 @@ EndProperty
 
 float Property _Timeout Auto Hidden Conditional
 bool Property _TimeoutLock Auto Hidden Conditional
-bool Property _GameTimeout Auto Hidden Conditional
 Function SetTimeout()
   If(_Timeout == FLOAT_MAX_VAL)
-    Debug.Trace("[JF] WARN: Attempted to Set Timeout but ")
+    Debug.Trace("[JF] Attempted to Set Timeout but Timeout is locked", 1)
     return
   EndIf
   _Timeout = GameDaysPassed.Value + MCM.fTimeoutTime
@@ -36,21 +36,14 @@ Function LockTimeout()
   _TimeoutLock = true
 EndFunction
 
-Function UnlockTimeout(bool initialize)
-  Debug.Trace("[JF] Unlocking Timeout >> initalize = " + initialize)
-  If(initialize)
+Function UnlockTimeout(bool abInitialize)
+  Debug.Trace("[JF] Unlocking Timeout >> initalize = " + abInitialize)
+  If(abInitialize)
     _Timeout = GameDaysPassed.Value + MCM.fTimeoutTime
   Else
     _Timeout = GameDaysPassed.Value
   EndIf
   _TimeoutLock = false
-EndFunction
-
-Function GameEnd(bool initialize) global
-  Debug.Trace("[JF] Game Ent >> initalize = " + initialize)
-  JFMainEvents singleton = Singleton()
-  singleton._GameTimeout = false
-  singleton.UnlockTimeout(initialize)
 EndFunction
 
 ;/ =======================================================================

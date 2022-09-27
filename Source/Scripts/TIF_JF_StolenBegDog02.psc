@@ -11,7 +11,6 @@ act[0] = Game.GetPlayer()
 act[1] = akSpeaker
 JFAnimStarter.StartScene(act, "doggy", hook = "JFStolen")
 
-Steal.RegisterForSl()
 JFMainEvents.Singleton().petplay = true
 JFMainEvents.Singleton().humiliation = true
 ;END CODE
@@ -19,5 +18,3 @@ EndFunction
 ;END FRAGMENT
 
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
-
-JFStealClothes Property Steal  Auto  

@@ -68,7 +68,6 @@ EndFunction
 
 ; =========================================
 ; Lock Cooldown. Will overwrite SetTimeout() until UnlockCooldown() is called
-; Internally this will set Timeout to 3.4e38 (MAX_FLOAT), making it impossible to reach without console use
 ; =========================================
 Function LockTimeout() global
   JFMainEvents.Singleton().LockTimeout()
@@ -77,10 +76,11 @@ EndFunction
 ; =========================================
 ; Unlock Cooldown
 ; ---
-; @initialize: Should Cooldown be initialized? If true, Timeout will be set as if you called "SetTimeout()" right after this call
+; @abInitializeCooldown: Should Cooldown be initialized? 
+; If true, Timeout will be set as if you called "SetTimeout()" right after this call
 ; =========================================
-Function UnlockTimeout(bool initialize) global
-  JFMainEvents.Singleton().UnlockTimeout(initialize)
+Function UnlockTimeout(bool abInitializeCooldown) global
+  JFMainEvents.Singleton().UnlockTimeout(abInitializeCooldown)
 EndFunction
 
 ;/ =======================================================================
@@ -122,19 +122,17 @@ EndFunction
 ; @GameID: A unique ID to start a specific Game (if possible, optional)
 ; @akRef: An ObjectReference to send with the Event (optional)
 ; @aiValue: An integer (positive) to send with the Event (optional)
-; @source: Parameter for Debugging (optional)
 ; ; --- 
 ; @return: if a Game managed to start
 ; =========================================
-bool Function StartGame(int GameID = 0, ObjectReference akRef = none, int aiValue = 0, Form akSource = none) global
+bool Function StartGame(int GameID = 0, ObjectReference akRef = none, int aiValue = 0) global
   Keyword k = Keyword.GetKeyword("JF_EventGame")
   If(k.SendStoryEventAndWait(Game.GetPlayer().GetCurrentLocation(), GetFollower(), akRef, aiValue, GameID))
-    Debug.Trace("[JF] Game Event Call >> successfuly started started a Game " + akSource)
-    JFMainEvents.Singleton()._GameTimeout = true
+    Debug.Trace("[JF] Game Event Call >> successfuly started started Game")
     LockTimeout()
     return true
   Else
-    Debug.Trace("[JF] Game Event Call >> Failed to start a Game " + akSource)
+    Debug.Trace("[JF] Game Event Call >> Failed to start Game")
     Debug.MessageBox("<JF Gamecall>\nERROR: Failed to start Game")
     return false
   EndIf
@@ -147,11 +145,10 @@ EndFunction
 ; @akRef: An ObjectReference to send with the Event (optional)
 ; @aiValue1: An integer (positive) to send with the Event (optional), !replacing Severity
 ; @aiValue2: An integer (positive) to send with the Event (optional), !replacing Sleep Duration
-; @source: Parameter for Debugging (optional)
 ; ; --- 
 ; @return: if a Quest managed to start
 ; =========================================
-bool Function PriorityEvent(ObjectReference akRef = none, int aiValue1 = 0, int aiValue2 = 0)
+bool Function PriorityEvent(ObjectReference akRef = none, int aiValue1 = 0, int aiValue2 = 0) global
   Keyword k = Keyword.GetKeyword("JF_EventPriority")
   bool started = k.SendStoryEventAndWait(Game.GetPlayer().GetCurrentLocation(), GetFollower(), akRef, aiValue1, aiValue2)
   Debug.Trace("[JF] Priority Event Call >> successful = " + started)
