@@ -177,6 +177,7 @@ bool Function RecruitFollower(Actor npc)
 		JFMainEvents.Singleton().LoadData(npc)
 		JF.ForceRefTo(npc)
 	EndIf
+	npc.SendModEvent("JFFollowerRecruited")
 	return true
 EndFunction
 bool Function ValidRecruit(Actor npc)
@@ -192,8 +193,6 @@ bool Function ValidRecruit(Actor npc)
 	EndIf
 	return true
 EndFunction
-; NOTE: needed? Stopping Quests
-; JF_ManualScript.Stop()
 
 ; Dismiss the current Follower
 bool Function DismissFollower(bool force, bool severe)
