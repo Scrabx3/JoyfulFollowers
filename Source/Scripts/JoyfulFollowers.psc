@@ -54,7 +54,7 @@ EndFunction
     EventsAllowed = GameDaysPassed - LastEventTime + Cooldown_Timeout > 0
   To use this Conditions in the Creationkit, a new Variable is defined called "_Timeout" stored in "JFMainEvents.psc"
   Timeout is defined as: (LastEventTime + Cooldown_Timeout) and allows you to check for Cooldowns in CK Conditions like so:
-    GetVMQuestVariable [JF_Main, _Timeout] < GameDaysPassed
+    TimeoutActive = GetVMQuestVariable [JF_Main, _Timeout] > GameDaysPassed
 
   Best Practice: Depending on the complexity & size of your Event: I recommend calling LockTimeout() on Event begin and UnlockTimeout(true) on Event End, this avoids the possibility of another Event starting while your own Event is still ongoing
 ======================================================================= /;

@@ -34,7 +34,7 @@ bool Property bDebugRecruit = false Auto Hidden Conditional
 
 ; ---------------------------- Addons
 bool Property Initialized = false Auto Hidden
-JFMCMAddonPage[] Property AddOns Auto Hidden
+JFMCMAddonPage[] Property Addons Auto Hidden
 int _AddOnID
 
 int Function NumberAddOns()
@@ -52,42 +52,34 @@ Function AddNewPage(JFMCMAddOnPage akPage)
 	SetPages()
 EndFunction
 
-Event OnGameReload()
-	Initialized = false
-	Parent.OnGameReload()
-	int numaddons = NumberAddOns()
-	int i = 0
-	While(i < numaddons)
-		If(!AddOns[i].OnGameLoad())
-			AddOns[i] = none
+int Function AddCustomPages()
+	int _offset = Pages.Find("")
+	int i = _offset
+	While(i < Pages.Length)
+		String name = AddOns[i - _offset].PageName
+		If(!name)
+			return i
 		EndIf
+		Debug.MessageBox("Adding Page = " + Pages[i])
+		Pages[i] = name
 		i += 1
 	EndWhile
-	int where = AddOns.Find(none)
-	While (where < AddOns.Length && AddOns[where + 1])
-		AddOns[where] = AddOns[where + 1]
-		where += 1
-	EndWhile
-	Initialized = true
-EndEvent
+	return i
+EndFunction
 
 Function SetPages()
-	int offset = 2 ; Number of Pages owned by JF itself (except debug)
 	int numaddons = NumberAddOns()
-	Pages = Utility.CreateStringArray(offset + numaddons + 1)
+	Pages = Utility.CreateStringArray(3 + numaddons)
+	; Debug.MessageBox("JF > Setting Pages | addons = " + numaddons + " | max pages = " + Pages.Length)
 	Pages[0] = "$JF_General"
 	Pages[1] = "$JF_Events"
-	int i = offset
-	While(i < Pages.Length - 1)
-		Pages[i] = AddOns[i - offset].PageName
-		i += 1
-	EndWhile
+	int i = AddCustomPages()
 	Pages[i] = "$JF_Debug"
 EndFunction
 
 ; ---------------------------- Menu
 int Function GetVersion()
-	return 2
+	return 1
 EndFunction
 
 Event OnConfigInit()
@@ -96,13 +88,6 @@ Event OnConfigInit()
 	debtmodels = new String[2]
 	debtmodels[0] = "$JF_DebtSimple" ; Simple
 	debtmodels[1] = "$JF_DebtDynamic" ; Dynamic
-EndEvent
-
-Event OnVersionUpdate(int newVers)
-	If newVers == 2
-		AddOns = new JFMCMAddonPage[100]
-		Initialized = true
-	EndIf
 EndEvent
 
 Event OnPageReset(String page)

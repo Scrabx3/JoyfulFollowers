@@ -1,15 +1,25 @@
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
-;NEXT FRAGMENT INDEX 7
+;NEXT FRAGMENT INDEX 9
 Scriptname QF_JF_Harshnil02_07A42CB3 Extends Quest Hidden
+
+;BEGIN ALIAS PROPERTY ThievesLoc
+;ALIAS PROPERTY TYPE LocationAlias
+LocationAlias Property Alias_ThievesLoc Auto
+;END ALIAS PROPERTY
+
+;BEGIN ALIAS PROPERTY Note
+;ALIAS PROPERTY TYPE ReferenceAlias
+ReferenceAlias Property Alias_Note Auto
+;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY Boss
 ;ALIAS PROPERTY TYPE ReferenceAlias
 ReferenceAlias Property Alias_Boss Auto
 ;END ALIAS PROPERTY
 
-;BEGIN ALIAS PROPERTY Note
+;BEGIN ALIAS PROPERTY Leader
 ;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_Note Auto
+ReferenceAlias Property Alias_Leader Auto
 ;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY Harshnil
@@ -22,9 +32,9 @@ ReferenceAlias Property Alias_Harshnil Auto
 ReferenceAlias Property Alias_MapMarker Auto
 ;END ALIAS PROPERTY
 
-;BEGIN ALIAS PROPERTY Leader
+;BEGIN ALIAS PROPERTY Payment
 ;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_Leader Auto
+ReferenceAlias Property Alias_Payment Auto
 ;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY Follower
@@ -32,43 +42,12 @@ ReferenceAlias Property Alias_Leader Auto
 ReferenceAlias Property Alias_Follower Auto
 ;END ALIAS PROPERTY
 
-;BEGIN ALIAS PROPERTY ThievesLoc
-;ALIAS PROPERTY TYPE LocationAlias
-LocationAlias Property Alias_ThievesLoc Auto
-;END ALIAS PROPERTY
-
-;BEGIN ALIAS PROPERTY Payment
-;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_Payment Auto
-;END ALIAS PROPERTY
-
-;BEGIN FRAGMENT Fragment_4
-Function Fragment_4()
-;BEGIN CODE
-; Collected payment
-SetObjectiveCompleted(15)
-
-Rug.Disable()
-RugRoilled.Enable()
-Ladder.Enable()
-Alias_Leader.GetReference().Enable()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_0
-Function Fragment_0()
-;BEGIN CODE
-; Talked to Harshnil but denied his request
-;END CODE
-EndFunction
-;END FRAGMENT
-
 ;BEGIN FRAGMENT Fragment_6
 Function Fragment_6()
 ;BEGIN CODE
 ; End of Scene, black out and start Part 3
 Alias_Leader.GetReference().Disable()
+Alias_Harshnil.GetReference().Disable()
 
 If IsObjectiveDisplayed(40)
 SetObjectiveFailed(40)
@@ -77,6 +56,50 @@ SetObjectiveCompleted(50)
 
 Harshnil03.Start()
 Stop()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_2
+Function Fragment_2()
+;BEGIN CODE
+; Player reads note from boss
+; FollowerNoteScene.Start()
+; SetObjectiveDisplayed(40)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_3
+Function Fragment_3()
+;BEGIN CODE
+; Boss died
+SetObjectiveCompleted(10)
+SetObjectiveDisplayed(15)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_4
+Function Fragment_4()
+;BEGIN CODE
+; Collected payment
+SetObjectiveCompleted(15)
+SetObjectiveDisplayed(50)
+
+Alias_Leader.GetReference().Enable()
+Alias_Harshnil.GetReference().MoveToMyEditorLocation()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_5
+Function Fragment_5()
+;BEGIN CODE
+; Player enters Harshnils house after collecting the payment
+Game.SetPlayerAIDriven()
+Utility.Wait(0.5) ; Wait for loading screen to finish
+BetrayalScene.ForceStart()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -91,31 +114,20 @@ SetObjectiveDisplayed(50)
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_2
-Function Fragment_2()
+;BEGIN FRAGMENT Fragment_0
+Function Fragment_0()
 ;BEGIN CODE
-; Player reads note from boss
-FollowerNoteScene.Start()
-SetObjectiveDisplayed(40)
+; Talked to Harshnil but denied his request
 ;END CODE
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_5
-Function Fragment_5()
+;BEGIN FRAGMENT Fragment_7
+Function Fragment_7()
 ;BEGIN CODE
-; Player enters Harshnils house after collecting the payment
-BetrayalScene.ForceStart()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_3
-Function Fragment_3()
-;BEGIN CODE
-; Boss died
-SetObjectiveCompleted(10)
-SetObjectiveDisplayed(15)
+; scene properly started, imod got applied. Force Pl & Follower into bleedout
+Debug.SendAnimationEvent(Game.GetPlayer(), "BleedoutStart")
+Debug.SendAnimationEvent(Alias_Follower.GetReference(), "BleedoutStart")
 ;END CODE
 EndFunction
 ;END FRAGMENT

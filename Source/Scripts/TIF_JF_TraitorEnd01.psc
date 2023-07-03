@@ -6,7 +6,7 @@ Scriptname TIF_JF_TraitorEnd01 Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
-JoyfulFollowers.AddAffection(3)
+JoyfulFollowers.AddAffection(0)
 ;END CODE
 EndFunction
 ;END FRAGMENT

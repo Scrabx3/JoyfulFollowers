@@ -18,7 +18,7 @@ akSpeaker.Disable()
 Utility.Wait(0.7)
 FadeToBlackHoldImod.PopTo(FadeToBlackBackImod)
 
-JoyfulFollowers.AddAffection(3)
+JoyfulFollowers.AddAffection(2)
 ;END CODE
 EndFunction
 ;END FRAGMENT

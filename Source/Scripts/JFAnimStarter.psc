@@ -57,6 +57,10 @@ int Function StartScene(Actor[] array, String tags = "", String tagsexclude = ""
     return -1
   EndIf
   SexLabFramework SL = SexLabUtil.GetAPI()
+  If(!SL.Enabled)
+    Debug.Trace("[JF] Cannot start Animation. SexLab is currently disabled")
+    return -1
+  EndIf
   If(array.Length == 2)
     ; add ff tag if a consent lesbian animation
     If(victim == none && SL.GetGender(array[0]) == 1 && SL.GetGender(array[1]) == 1)
@@ -88,4 +92,20 @@ EndFunction
 
 float Function GetArousal(Actor that) global
   return (Quest.GetQuest("sla_Framework") as slaFrameworkScr).GetActorArousal(that)
+EndFunction
+
+bool Function EndScene(Actor akRef) global
+  SexLabFramework SL = SexLabUtil.GetAPI()
+  int tid = SL.FindActorController(akRef)
+  if (tid == -1)
+    Debug.Trace("[Kudasai] Actor = " + akRef + " is not part of any SL Animation.")
+    return false
+  endif
+  sslThreadController controller = SL.GetController(tid)
+  if (!controller)
+    Debug.Trace("[Kudasai] Actor = " + akRef + " is not part of any SL Animation.")
+    return false
+  endif
+  controller.EndAnimation()
+  return true
 EndFunction

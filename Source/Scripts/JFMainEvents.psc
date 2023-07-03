@@ -82,7 +82,7 @@ bool Property FIsCruel = false Auto Hidden Conditional
 bool Property FIsGreedy = false Auto Hidden Conditional
 
 ; ---------------------- Violating
-; interested in being violated
+; interested in being violated/raped/enslaved ...
 bool Property Violated = false Auto Hidden Conditional
 
 ; ---------------------- Groupsex
@@ -94,7 +94,7 @@ bool Property Groupsex = false Auto Hidden Conditional
 bool Property Bestiality = false Auto Hidden Conditional
 
 ; ---------------------- Masochism
-; As in physical and/or erotic torture
+; As in physical and/or erotic torture/enslavement
 bool Property Masochism = false Auto Hidden Conditional
 
 ; ---------------------- Bondage

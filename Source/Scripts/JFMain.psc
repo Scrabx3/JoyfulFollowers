@@ -1,7 +1,7 @@
 Scriptname JFMain extends Quest  
 
 Actor CurrentFollower_var
-Actor Property CurrentFollower
+Actor Property CurrentFollower Hidden
   Actor Function Get()
     return CurrentFollower_var
   EndFunction
@@ -62,6 +62,8 @@ MiscObject Property Gold001 Auto
 ImageSpaceModifier Property FadeToBlackImod Auto
 ImageSpaceModifier Property FadeToBlackHoldImod Auto
 ImageSpaceModifier Property FadeToBlackBackImod Auto
+Message Property FollowerLike Auto
+Message Property FollowerDislike Auto
 ; ===================================
 ; ===================================
 Function Maintenance()
@@ -233,14 +235,14 @@ EndFunction
 Function AddAffection(int type, bool forcesilent)
 	float affection = GetAffection(CurrentFollower)
   If(affection == -2)
-    Debug.MessageBox("[JF] FATAL: Can't increase Affection while no Follower is with you")
+    ; Debug.MessageBox("[JF] FATAL: Can't increase Affection while no Follower is with you")
     Debug.Trace("[JF] FATAL: <AddAffection> but no Follower found", 2)
     return
   EndIf
 	affection += Math.LeftShift(2, type)
 	StorageUtil.SetFloatValue(CurrentFollower, "jfaffection", affection)
 	If(!forcesilent && type == 0)
-		Debug.Notification(CurrentFollower.GetLeveledActorBase().GetName() + " liked that.")
+		FollowerLike.Show()
 	EndIf
 	UpdateLevel()
 EndFunction
@@ -249,14 +251,14 @@ EndFunction
 Function DamageAffection(bool severe, bool forcesilent)
   float affection = GetAffection(CurrentFollower)
   If(affection == -2)
-    Debug.MessageBox("[JF] FATAL: Can't damage Affection while no Follower is with you")
+    ; Debug.MessageBox("[JF] FATAL: Can't damage Affection while no Follower is with you")
     Debug.Trace("[JF] FATAL: <DamageAffection> but no Follower found", 2)
     return
   EndIf
 	affection -= Math.LeftShift(4, severe as int)
 	StorageUtil.SetFloatValue(CurrentFollower, "jfaffection", affection)
 	If(!forcesilent)
-		Debug.Notification(CurrentFollower.GetLeveledActorBase().GetName() + " disliked that.")
+		FollowerDislike.Show()
 	EndIf
 	UpdateLevel()
 EndFunction

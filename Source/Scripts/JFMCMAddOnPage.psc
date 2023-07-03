@@ -14,12 +14,6 @@ Event OnInit()
   InitializePage()
 EndEvent
 
-; Called every game start to control if the Page still exists
-; If overwritten, call "return Parent.OnLoadGame()" once youre done
-bool Function OnGameLoad()
-  return true
-EndFunction
-
 ; Overwrite this Function to initialize your variables, equivalent to "OnConfigInit()"
 Function InitializePage()
 EndFunction
