@@ -32,49 +32,69 @@ bool Property bCreatureContent = false Auto Hidden Conditional
 bool Property bAutoRecruit = true Auto Hidden Conditional
 bool Property bDebugRecruit = false Auto Hidden Conditional
 
-; ---------------------------- Addons
-bool Property Initialized = false Auto Hidden
-JFMCMAddonPage[] Property Addons Auto Hidden
-int _AddOnID
+; --------------------- Add On System
+
+String Property PageKey = "__JFMCMPages" AutoReadOnly
+int Property _MAXPAGES = 100 AutoReadOnly
+int Property _ActivePageID = -1 Auto Hidden
+
+JFMCMPage Function GetActivePage()
+	If(_ActivePageID == -1 || _ActivePageID > NumberAddOns())
+		return none
+	EndIf
+	return StorageUtil.FormListGet(self, PageKey, _ActivePageID) as JFMCMPage
+EndFunction
+
+JFMCMPage Function FindPage(String asPage)
+	Form[] mypages = StorageUtil.FormListToArray(self, PageKey)
+  int i = 0
+  While(i < mypages.Length)
+		JFMCMPage page = mypages[i] as JFMCMPage
+    If(page._PageName == asPage)
+			_ActivePageID = i
+      return page
+    ElseIf(page._PageName == "")
+      return none
+    EndIf
+    i += 1
+  EndWhile
+  return none
+EndFunction
 
 int Function NumberAddOns()
-	int where = AddOns.Find(none)
-	If (where < 0)
-		return AddOns.Length
-	Else
-		return where
+	return StorageUtil.FormListCount(self, PageKey)
+EndFunction
+
+bool Function AddNewPage(JFMCMPage akNewPage)
+	If(NumberAddOns() >= _MAXPAGES)
+		Debug.Trace("[JF] Cannot add more Pages. Page " + akNewPage + " will not be added")
+		return false
+	ElseIf(StorageUtil.FormListAdd(self, PageKey, akNewPage, false) == -1)
+		Debug.Trace("[JF] Unable to add Page " + akNewPage)
+		return false
 	EndIf
-EndFunction
-
-Function AddNewPage(JFMCMAddOnPage akPage)
-	int where = AddOns.Find(none)
-	AddOns[where] = akPage
 	SetPages()
-EndFunction
-
-int Function AddCustomPages()
-	int _offset = Pages.Find("")
-	int i = _offset
-	While(i < Pages.Length)
-		String name = AddOns[i - _offset].PageName
-		If(!name)
-			return i
-		EndIf
-		Debug.MessageBox("Adding Page = " + Pages[i])
-		Pages[i] = name
-		i += 1
-	EndWhile
-	return i
+	return true
 EndFunction
 
 Function SetPages()
-	int numaddons = NumberAddOns()
-	Pages = Utility.CreateStringArray(3 + numaddons)
-	; Debug.MessageBox("JF > Setting Pages | addons = " + numaddons + " | max pages = " + Pages.Length)
+	int _OffsetFirst = 2
+	int _OffsetLast = 1
+  int _NumAddons = NumberAddOns()
+	Pages = Utility.CreateStringArray(_OffsetFirst + _OffsetLast + _NumAddons)
+  ; -- Create Pages pre-Addon
 	Pages[0] = "$JF_General"
 	Pages[1] = "$JF_Events"
-	int i = AddCustomPages()
+  ; --
+	int i = _OffsetFirst
+	While(i < Pages.Length - _OffsetLast)
+		JFMCMPage tmp = StorageUtil.FormListGet(self, PageKey, i - _OffsetFirst) as JFMCMPage
+		Pages[i] = tmp._PageName
+		i += 1
+	EndWhile
+  ; -- Create Pages post-Addon
 	Pages[i] = "$JF_Debug"
+  ; --
 EndFunction
 
 ; ---------------------------- Menu
@@ -91,10 +111,9 @@ Event OnConfigInit()
 EndEvent
 
 Event OnPageReset(String page)
-	_AddOnID = -1
 	SetCursorFillMode(TOP_TO_BOTTOM)
 	If(page == "")
-		page == "$JF_General"
+		page = "$JF_General"
 	EndIf
 	If(page == "$JF_General")
 		AddHeaderOption("$JF_Affection")
@@ -135,8 +154,6 @@ Event OnPageReset(String page)
 		AddHeaderOption("$JF_Traitor")
 		AddSliderOptionST("traitorscale", "$JF_TraitorScale", iTraitorScale, "{0}")
 		SetCursorPosition(1)
-	ElseIf(IsPageAddon(page))
-		; handled in the specific addon
 	ElseIf(page == "$JF_Debug")
 		AddHeaderOption("$JF_Dialogue")
 		AddToggleOptionST("PiF", "$JF_FutaPl", bIsFutaPl)
@@ -149,21 +166,14 @@ Event OnPageReset(String page)
 		AddHeaderOption("$JF_Recruitment")
 		AddToggleOptionST("debugrecruit", "$JF_DebugRecruit", bDebugRecruit)
 		AddToggleOptionST("autorecruit", "$JF_AutoRecruit", bAutoRecruit)
+	Else
+		Debug.Trace("[JF] Looking for Page > " + page)
+		JFMCMPage mcmpage = FindPage(page)
+		If(mcmpage)
+			mcmpage.OnPageReset()
+		EndIf
 	EndIf
 EndEvent
-
-bool Function IsPageAddon(String asPage)
-	int numaddons = NumberAddOns()
-	int i = 0
-	While(i < numaddons)
-		If(AddOns[i].PageName == asPage)
-			_AddOnID = i
-			AddOns[i].OnPageCalled()
-			return true
-		EndIf
-		i += 1
-	EndWhile
-EndFunction
 
 String Function GetFollowerName()
 	Actor fol = JoyfulFollowers.GetFollower()
@@ -198,9 +208,10 @@ endFunction
 ; ----------------- Event States
 
 Event OnSelectST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnSelectST()
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnSelectST()
 		return
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
@@ -252,9 +263,10 @@ Event OnSelectST()
 EndEvent
 
 Event OnSliderOpenST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnSliderOpenST()
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnSliderOpenST()
 		return
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
@@ -297,9 +309,10 @@ Event OnSliderOpenST()
 EndEvent
 
 Event OnSliderAcceptST(Float afValue)
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnSliderAcceptST(afValue)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnSliderAcceptST(afValue)
 		return
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
@@ -329,9 +342,10 @@ Event OnSliderAcceptST(Float afValue)
 EndEvent
 
 Event OnMenuOpenST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnMenuOpenST()
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnMenuOpenST()
 		return
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
@@ -344,9 +358,10 @@ Event OnMenuOpenST()
 EndEvent
 
 Event OnMenuAcceptST(Int aiIndex)
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnMenuAcceptST(aiIndex)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnMenuAcceptST(aiIndex)
 		return
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
@@ -357,58 +372,58 @@ Event OnMenuAcceptST(Int aiIndex)
 EndEvent
 
 Event OnDefaultST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnDefaultST()
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnDefaultST()
 	EndIf
 EndEvent
 
 Event OnColorOpenST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnColorOpenST()
-		return
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnColorOpenST()
 	EndIf
 EndEvent
 
 Event OnColorAcceptST(int aiColor)
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnColorAcceptST(aiColor)
-		return
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnColorAcceptST(aiColor)
 	EndIf
 EndEvent
 
-Event OnKeyMapChangeST(int a_keyCode, string a_conflictControl, string a_conflictName)
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnKeyMapChangeST(a_keyCode, a_conflictControl, a_conflictName)
-		return
+Event OnKeyMapChangeST(int aiKeyCode, string asConflictControl, string asConflictName)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnKeyMapChangeST(aiKeyCode, asConflictControl, asConflictName)
 	EndIf
 EndEvent
 
 Event OnInputOpenST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnInputOpenST()
-		return
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnInputOpenST()
 	EndIf
 EndEvent
 
-Event OnInputAcceptST(string a_input)
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnInputAcceptST(a_input)
-		return
+Event OnInputAcceptST(string asInput)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnInputAcceptST(asInput)
 	EndIf
 EndEvent
-
 
 Event OnHighlightST()
-	If(_AddOnID > -1)
-		AddOns[_AddOnID].GoToState(GetState())
-		AddOns[_AddOnID].OnHighlightST()
-		return
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.GoToState(GetState())
+		page.OnHighlightST()
 	EndIf
 	String[] op = PapyrusUtil.StringSplit(GetState(), "_")
 	If(op[0] == "AffectionChange")
@@ -461,54 +476,88 @@ State affectioncheat
 	EndEvent
 EndState
 
-
-
-; --------------------------------- Events
-
-Event OnOptionHighlight(int aiOption)
-	AddOns[_AddOnID].OnOptionHighlight(aiOption)
-EndEvent
+; ----------------- Legacy Events
 
 Event OnOptionSelect(int aiOption)
-	AddOns[_AddOnID].OnOptionSelect(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionSelect(aiOption)
+	EndIf
 EndEvent
 
 Event OnOptionDefault(int aiOption)
-	AddOns[_AddOnID].OnOptionDefault(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionDefault(aiOption)
+	EndIf
 EndEvent
 
 Event OnOptionSliderOpen(int aiOption)
-	AddOns[_AddOnID].OnOptionSliderOpen(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionSliderOpen(aiOption)
+	EndIf
 EndEvent
 
 Event OnOptionSliderAccept(int aiOption, float afValue)
-	AddOns[_AddOnID].OnOptionSliderAccept(aiOption, afValue)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionSliderAccept(aiOption, afValue)
+	EndIf
 EndEvent
 
 Event OnOptionMenuOpen(int aiOption)
-	AddOns[_AddOnID].OnOptionMenuOpen(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionMenuOpen(aiOption)
+	EndIf
 EndEvent
 
 Event OnOptionMenuAccept(int aiOption, int aiIndex)
-	AddOns[_AddOnID].OnOptionMenuAccept(aiOption, aiIndex)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionMenuAccept(aiOption, aiIndex)
+	EndIf
 EndEvent
 
 Event OnOptionColorOpen(int aiOption)
-	AddOns[_AddOnID].OnOptionColorOpen(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionColorOpen(aiOption)
+	EndIf
 EndEvent
 
 Event OnOptionColorAccept(int aiOption, int aiColor)
-	AddOns[_AddOnID].OnOptionColorAccept(aiOption, aiColor)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionColorAccept(aiOption, aiColor)
+	EndIf
 EndEvent
 
-Event OnOptionKeyMapChange(int aiOption, int a_keyCode, string a_conflictControl, string a_conflictName)
-	AddOns[_AddOnID].OnOptionKeyMapChange(aiOption, a_keyCode, a_conflictControl, a_conflictName)
+Event OnOptionKeyMapChange(int aiOption, int aiKeyCode, string asConflictControl, string asConflictName)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionKeyMapChange(aiOption, aiKeyCode, asConflictControl, asConflictName)
+	EndIf
 EndEvent
 
 Event OnOptionInputOpen(int aiOption)
-	AddOns[_AddOnID].OnOptionInputOpen(aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionInputOpen(aiOption)
+	EndIf
 EndEvent
 
-Event OnOptionInputAccept(int aiOption, string a_input)
-	AddOns[_AddOnID].OnOptionInputAccept(aiOption, a_input)
+Event OnOptionInputAccept(int aiOption, string asInput)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionInputAccept(aiOption, asInput)
+	EndIf
+EndEvent
+
+Event OnOptionHighlight(int aiOption)
+	JFMCMPage page = GetActivePage()
+	If(page)
+		page.OnOptionHighlight(aiOption)
+	EndIf
 EndEvent
