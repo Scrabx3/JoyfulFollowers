@@ -1,10 +1,10 @@
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
-;NEXT FRAGMENT INDEX 25
+;NEXT FRAGMENT INDEX 27
 Scriptname QF_JF_BelowCollege_075A1DC0 Extends Quest Hidden
 
-;BEGIN ALIAS PROPERTY MiddenTrigger
+;BEGIN ALIAS PROPERTY Bedroll
 ;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_MiddenTrigger Auto
+ReferenceAlias Property Alias_Bedroll Auto
 ;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY Reward
@@ -12,9 +12,9 @@ ReferenceAlias Property Alias_MiddenTrigger Auto
 ReferenceAlias Property Alias_Reward Auto
 ;END ALIAS PROPERTY
 
-;BEGIN ALIAS PROPERTY Bedroll
+;BEGIN ALIAS PROPERTY MiddenTrigger
 ;ALIAS PROPERTY TYPE ReferenceAlias
-ReferenceAlias Property Alias_Bedroll Auto
+ReferenceAlias Property Alias_MiddenTrigger Auto
 ;END ALIAS PROPERTY
 
 ;BEGIN ALIAS PROPERTY JoyFol
@@ -27,20 +27,6 @@ ReferenceAlias Property Alias_JoyFol Auto
 ReferenceAlias Property Alias_AtronachForge Auto
 ;END ALIAS PROPERTY
 
-;BEGIN FRAGMENT Fragment_16
-Function Fragment_16()
-;BEGIN CODE
-; Player passed out, Follower takes them to some safe location & triggers a Scene
-; This Stage is called AFTER the Scene to stop the Quest
-
-JoyfulFollowers.AddAffection(2)
-
-CompleteAllObjectives()
-Stop()
-;END CODE
-EndFunction
-;END FRAGMENT
-
 ;BEGIN FRAGMENT Fragment_4
 Function Fragment_4()
 ;BEGIN CODE
@@ -52,39 +38,23 @@ SetObjectiveDisplayed(50)
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_11
-Function Fragment_11()
-;BEGIN CODE
-; Ritual is over, Staff has been placed on the Forge. The Player can either take the Staff which
-; will force the Player to forcegreet or ignore the staff and talk to the Follower directly
-; We point them at the Staff of course :) 
-
-SetObjectiveCompleted(60)
-SetObjectiveDisplayed(80)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_23
-Function Fragment_23()
-;BEGIN CODE
-; Player killed all the Atronachs, check on the Follower
-
-SetObjectiveCompleted(400)
-SetObjectiveDisplayed(410)
-
-Actor fol = ALias_joyfol.GetActorReference()
-fol.SetNoBleedoutRecovery(false)
-;END CODE
-EndFunction
-;END FRAGMENT
-
 ;BEGIN FRAGMENT Fragment_2
 Function Fragment_2()
 ;BEGIN CODE
 ; Intro
 ; Player knows about the Ritual and that itl will require Materials
 SetObjectiveDisplayed(0)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_17
+Function Fragment_17()
+;BEGIN CODE
+; Meeting up with Follower, then realizing theyre in.. a bit of a predicament
+
+SetObjectiveCompleted(30)
+SetObjectiveDisplayed(50)
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -108,6 +78,106 @@ JoyfulFollowers.LockTimeOut()
 EndFunction
 ;END FRAGMENT
 
+;BEGIN FRAGMENT Fragment_20
+Function Fragment_20()
+;BEGIN CODE
+; College Scenario 2 end
+JoyfulFollowers.AddAffection(2)
+
+CompleteAllObjectives()
+Stop()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_16
+Function Fragment_16()
+;BEGIN CODE
+; Player passed out, Follower takes them to some safe location & triggers a Scene
+; This Stage is called AFTER the Scene to stop the Quest
+
+JoyfulFollowers.AddAffection(2)
+
+CompleteAllObjectives()
+Stop()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_21
+Function Fragment_21()
+;BEGIN CODE
+; player wakes up with Atronachs going crrrrrazy
+int i = 0
+While(i < AtronachSpawns.Length)
+  AtronachSpawns[i].PlaceActorAtMe(AtronachAny)
+  i += 1
+EndWhile
+
+Actor fol = Alias_Joyfol.GetActorReference()
+fol.SetNoBleedoutRecovery(true)
+fol.DamageAV("Health", fol.GetAV("Health"))
+
+SetObjectiveCompleted(30)
+SetObjectiveDisplayed(400)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_15
+Function Fragment_15()
+;BEGIN AUTOCAST TYPE JFBelowCollege
+Quest __temp = self as Quest
+JFBelowCollege kmyQuest = __temp as JFBelowCollege
+;END AUTOCAST
+;BEGIN CODE
+; Player fears they might faint, so Follower brings them to either the Archmage Quarters or
+; Frozen Hearth (depending on Story Progression)
+; This Scene completes the Quest
+
+EscortScene.Start()
+JoyfulFollowers.AddAffection(2)
+GameDaysPassed.Value += 2
+GameDay.Value += 2
+CompleteAllObjectives()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_11
+Function Fragment_11()
+;BEGIN CODE
+; Ritual is over, Staff has been placed on the Forge. The Player can either take the Staff which
+; will force the Player to forcegreet or ignore the staff and talk to the Follower directly
+; We point them at the Staff of course :) 
+
+SetObjectiveCompleted(60)
+SetObjectiveDisplayed(80)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_1
+Function Fragment_1()
+;BEGIN CODE
+; Intro
+; Follower was already teasing the Event in a "joke"
+SetObjectiveDisplayed(0)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_0
+Function Fragment_0()
+;BEGIN CODE
+; Intro
+; Folower has to explain everything when we get there
+; Player didnt ask any Questions about the Event itself
+SetObjectiveDisplayed(0)
+;END CODE
+EndFunction
+;END FRAGMENT
+
 ;BEGIN FRAGMENT Fragment_5
 Function Fragment_5()
 ;BEGIN CODE
@@ -120,20 +190,28 @@ JoyFol.EvaluatePackage()
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_10
-Function Fragment_10()
+;BEGIN FRAGMENT Fragment_18
+Function Fragment_18()
+;BEGIN CODE
+; Player sees follower being.. "busy" with the atronachs
+; IDEA: Add options for Player to help follower?
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_9
+Function Fragment_9()
 ;BEGIN AUTOCAST TYPE JFBelowCollege
 Quest __temp = self as Quest
 JFBelowCollege kmyQuest = __temp as JFBelowCollege
 ;END AUTOCAST
 ;BEGIN CODE
-; Follower pulled the Lever, Ritual starts & blabla
+; Quest completed with the Default Scenario. Jus Complete Quest
 
-kmyQuest.ActivateForge()
-SetObjectiveCompleted(50)
-SetObjectiveDisplayed(60)
+JoyfulFollowers.AddAffection(2)
 
-JFMainEvents.Singleton().KCollegeRitual = true
+CompleteAllObjectives()
+Stop()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -155,33 +233,29 @@ Stop()
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_17
-Function Fragment_17()
+;BEGIN FRAGMENT Fragment_25
+Function Fragment_25()
 ;BEGIN CODE
-; Meeting up with Follower, then realizing theyre in.. a bit of a predicament
-
-SetObjectiveCompleted(30)
-SetObjectiveDisplayed(50)
+Debug.Trace("[JF] Below College END")
+JoyfulFollowers.unlockTimeOut(true)
 ;END CODE
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_15
-Function Fragment_15()
+;BEGIN FRAGMENT Fragment_10
+Function Fragment_10()
 ;BEGIN AUTOCAST TYPE JFBelowCollege
 Quest __temp = self as Quest
 JFBelowCollege kmyQuest = __temp as JFBelowCollege
 ;END AUTOCAST
 ;BEGIN CODE
-; Player fears they might faint, so Follower brings them to either the Archmage Quarters or
-; Frozen Hearth (depending on Story Progression)
-; This Scene completes the Quest
+; Follower pulled the Lever, Ritual starts & blabla
 
-EscortScene.Start()
-JoyfulFollowers.AddAffection(2)
-GameDaysPassed.Value += 2
-GameDay.Value += 2
-CompleteAllObjectives()
+kmyQuest.ActivateForge()
+SetObjectiveCompleted(50)
+SetObjectiveDisplayed(60)
+
+JFMainEvents.Singleton().KCollegeRitual = true
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -209,100 +283,16 @@ Stop()
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_0
-Function Fragment_0()
+;BEGIN FRAGMENT Fragment_23
+Function Fragment_23()
 ;BEGIN CODE
-; Intro
-; Folower has to explain everything when we get there
-; Player didnt ask any Questions about the Event itself
-SetObjectiveDisplayed(0)
-;END CODE
-EndFunction
-;END FRAGMENT
+; Player killed all the Atronachs, check on the Follower
 
-;BEGIN FRAGMENT Fragment_18
-Function Fragment_18()
-;BEGIN CODE
-; Player sees follower being.. "busy" with the atronachs
-; IDEA: Add options for Player to help follower?
-;END CODE
-EndFunction
-;END FRAGMENT
+SetObjectiveCompleted(400)
+SetObjectiveDisplayed(410)
 
-;BEGIN FRAGMENT Fragment_1
-Function Fragment_1()
-;BEGIN CODE
-; Intro
-; Follower was already teasing the Event in a "joke"
-SetObjectiveDisplayed(0)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_19
-Function Fragment_19()
-;BEGIN CODE
-; Follower Scenes done, enable Dialogue with Follower
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_21
-Function Fragment_21()
-;BEGIN CODE
-; player wakes up with Atronachs going crrrrrazy
-int i = 0
-While(i < AtronachSpawns.Length)
-  AtronachSpawns[i].PlaceActorAtMe(AtronachAny)
-  i += 1
-EndWhile
-
-Actor fol = Alias_Joyfol.GetActorReference()
-fol.SetNoBleedoutRecovery(true)
-fol.DamageAV("Health", fol.GetAV("Health"))
-
-SetObjectiveCompleted(30)
-SetObjectiveDisplayed(400)
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_12
-Function Fragment_12()
-;BEGIN CODE
-; This only enables a Forcegreet that is triggered after the Player took the Staff
-; The player may also engage into this Dialogue themselves before taking the staff
-
-JoyFol.EvaluatePackage()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_20
-Function Fragment_20()
-;BEGIN CODE
-; College Scenario 2 end
-JoyfulFollowers.AddAffection(2)
-
-CompleteAllObjectives()
-Stop()
-;END CODE
-EndFunction
-;END FRAGMENT
-
-;BEGIN FRAGMENT Fragment_9
-Function Fragment_9()
-;BEGIN AUTOCAST TYPE JFBelowCollege
-Quest __temp = self as Quest
-JFBelowCollege kmyQuest = __temp as JFBelowCollege
-;END AUTOCAST
-;BEGIN CODE
-; Quest completed with the Default Scenario. Jus Complete Quest
-
-JoyfulFollowers.AddAffection(2)
-
-CompleteAllObjectives()
-Stop()
+Actor fol = ALias_joyfol.GetActorReference()
+fol.SetNoBleedoutRecovery(false)
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -322,6 +312,25 @@ JoyfulFollowers.AddAffection(2)
 GameDaysPassed.Value += 2
 GameDay.Value += 2
 CompleteAllObjectives()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_12
+Function Fragment_12()
+;BEGIN CODE
+; This only enables a Forcegreet that is triggered after the Player took the Staff
+; The player may also engage into this Dialogue themselves before taking the staff
+
+JoyFol.EvaluatePackage()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_19
+Function Fragment_19()
+;BEGIN CODE
+; Follower Scenes done, enable Dialogue with Follower
 ;END CODE
 EndFunction
 ;END FRAGMENT
