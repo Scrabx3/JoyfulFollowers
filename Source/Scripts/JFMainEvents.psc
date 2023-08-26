@@ -26,7 +26,7 @@ Function SetTimeout()
     Debug.Trace("[JF] Attempted to Set Timeout but Timeout is locked", 1)
     return
   EndIf
-  _Timeout = GameDaysPassed.Value + MCM.fTimeoutTime
+  _Timeout = GameDaysPassed.Value + (MCM.fTimeoutTime / 24)
   Debug.Trace("[JF] Setting Timeout >> GameDaysPassed = " + GameDaysPassed.Value + " >> Timeout = " + _Timeout)
 EndFunction
 
@@ -39,7 +39,7 @@ EndFunction
 Function UnlockTimeout(bool abInitialize)
   Debug.Trace("[JF] Unlocking Timeout >> initalize = " + abInitialize)
   If(abInitialize)
-    _Timeout = GameDaysPassed.Value + MCM.fTimeoutTime
+    _Timeout = GameDaysPassed.Value + (MCM.fTimeoutTime / 24)
   Else
     _Timeout = GameDaysPassed.Value
   EndIf
