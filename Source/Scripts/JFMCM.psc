@@ -139,12 +139,18 @@ Event OnPageReset(String page)
 		AddTextOption("$JF_CurAffection", JoyfulFollowers.GetAffectionLevel() as int)
 		AddTextOption("$JF_CurSeverity", JoyfulFollowers.GetSeverity())
 		AddEmptyOption()
-		AddEmptyOption()
+		; AddEmptyOption()
 		; AddEmptyOption()
 		; AddEmptyOption()
 		AddHeaderOption("$JF_System")
 		AddToggleOptionST("CreatureContent", "$JF_CreatureContent", bCreatureContent)
 		AddSliderOptionST("TimeoutTime", "$JF_Timeout", fTimeoutTime, "{1}h")
+		String active = "$No"
+		JFMainEvents events = JFMainEvents.Singleton()
+		If (events._Timeout >= events.GameDaysPassed.Value)
+			active = "$Yes"
+		EndIf
+		AddTextOptionST("TimeoutCheck", "$JF_TimeoutActive", active, getFlag(active == "$Yes"))
 	ElseIf(page == "$JF_Events")
 		AddHeaderOption("$JF_Stolen")
 		AddToggleOptionST("stolenStealing", "$JF_StolenStealing", bStolenSteal)
@@ -241,6 +247,12 @@ Event OnSelectST()
 	ElseIf(op[0] == "CreatureContent")
 		bCreatureContent = !bCreatureContent
 		SetToggleOptionValueST(bCreatureContent)
+	ElseIf(op[0] == "TimeoutCheck")
+		If (!ShowMessage("$JF_TimeoutActiveConfirm"))
+			return
+		EndIf
+		JFMainEvents.Singleton().UnlockTimeout(false)
+		ForcePageReset()
 	ElseIf(op[0] == "PiF")
 		bIsFuta = !bIsFuta
 		SetToggleOptionValueST(bIsFuta)
