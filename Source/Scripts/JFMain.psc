@@ -150,9 +150,13 @@ h:DamageAffection(severe) = 4 << severe
 ; Validate this npc as a Follower and assign them a Joyful Follower
 bool Function RecruitFollower(Actor npc)
   ReferenceAlias JF = GetNthAlias(1) as ReferenceAlias
-	; Dismiss previous Follower
-	If(JF.GetReference() != none)
+	ObjectReference prevJF = JF.GetReference()
+	Debug.Trace("[JF] Attempting to recuir new Joyful Follower: " + npc + "(Old Follower: " + JF.GetRef() + ")")
+	If (prevJF == npc)
+		return false
+	ElseIf(prevJF)
 		If(!DismissFollower(true, false))
+			Debug.Trace("[JF] Failed to recruit Follower, previous follower could not be dismissed")
 			return false
 		EndIf
 	EndIf
