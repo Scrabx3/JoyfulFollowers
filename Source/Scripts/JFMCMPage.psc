@@ -59,40 +59,40 @@ Function SetCursorFillMode(int aiFillMode)
 EndFunction
 
 int Function AddEmptyOption()
-	_ParentMCM.AddEmptyOption()
+	return _ParentMCM.AddEmptyOption()
 EndFunction
 
 int Function AddHeaderOption(String asText, int aiFlags = 0)
-	_ParentMCM.AddHeaderOption(asText, aiFlags)
+	return _ParentMCM.AddHeaderOption(asText, aiFlags)
 EndFunction
 
 int Function AddTextOption(String asText, String asValue, int aiFlags = 0)
-	_ParentMCM.AddTextOption(asText, asValue, aiFlags)
+	return _ParentMCM.AddTextOption(asText, asValue, aiFlags)
 EndFunction
 
 int Function AddToggleOption(String asText, bool abChecked, int aiFlags = 0)
-	_ParentMCM.AddToggleOption(asText, abChecked, aiFlags)
+	return _ParentMCM.AddToggleOption(asText, abChecked, aiFlags)
 EndFunction
 
 int Function AddSliderOption(String asText, float afValue, String asFormatString = "{0}", int aiFlags = 0)
-	_ParentMCM.AddSliderOption(asText, afValue, asFormatString, aiFlags)
+	return _ParentMCM.AddSliderOption(asText, afValue, asFormatString, aiFlags)
 EndFunction
 
 int Function AddMenuOption(String asText, String asValue, int aiFlags = 0)
-	_ParentMCM.AddMenuOption(asText, asValue, aiFlags)
+	return _ParentMCM.AddMenuOption(asText, asValue, aiFlags)
 EndFunction
 
 int Function AddColorOption(String asText, int aiColor, int aiFlags = 0)
-	_ParentMCM.AddColorOption(asText, aiColor, aiFlags)
+	return _ParentMCM.AddColorOption(asText, aiColor, aiFlags)
 EndFunction
 
 int Function AddKeyMapOption(String asText, int aiKeyCode, int aiFlags = 0)
-	_ParentMCM.AddKeyMapOption(asText, aiKeyCode, aiFlags)
+	return _ParentMCM.AddKeyMapOption(asText, aiKeyCode, aiFlags)
 EndFunction
 
 ; @since 4
 int Function AddInputOption(String asText, String asValue, int aiFlags = 0)
-	_ParentMCM.AddInputOption(asText, asValue, aiFlags)
+	return _ParentMCM.AddInputOption(asText, asValue, aiFlags)
 EndFunction
 
 ; @since 2
@@ -245,7 +245,7 @@ Function SetInputDialogStartText(String asText)
 EndFunction
 
 bool Function ShowMessage(String asMessage, bool abWithCancel = true, String asAcceptLabel = "$Accept", String asCancelLabel = "$Cancel")
-	_ParentMCM.ShowMessage(asMessage, abWithCancel, asAcceptLabel, asCancelLabel)
+	return _ParentMCM.ShowMessage(asMessage, abWithCancel, asAcceptLabel, asCancelLabel)
 EndFunction
 
 ; ----------------- Events

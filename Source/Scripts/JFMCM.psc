@@ -115,6 +115,7 @@ Event OnPageReset(String page)
 	If(page == "")
 		page = "$JF_General"
 	EndIf
+	_ActivePageID = -1
 	If(page == "$JF_General")
 		AddHeaderOption("$JF_Affection")
 		AddToggleOptionST("AffectionChange", "$JF_NotifyAffection", bNotifyAffection)
@@ -173,11 +174,13 @@ Event OnPageReset(String page)
 		AddToggleOptionST("debugrecruit", "$JF_DebugRecruit", bDebugRecruit)
 		AddToggleOptionST("autorecruit", "$JF_AutoRecruit", bAutoRecruit)
 	Else
-		Debug.Trace("[JF] Looking for Page > " + page)
+		Debug.Trace("[JF] Looking for Page '" + page + "'")
 		JFMCMPage mcmpage = FindPage(page)
-		If(mcmpage)
-			mcmpage.OnPageReset()
+		If (!mcmpage)
+			Debug.Trace("[JF] No Page found with name '" + page + "'")
+			return
 		EndIf
+		mcmpage.OnPageReset()
 	EndIf
 EndEvent
 
