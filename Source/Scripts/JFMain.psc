@@ -1,9 +1,9 @@
 Scriptname JFMain extends Quest  
 
-Actor CurrentFollower_var
+; Actor CurrentFollower_var
 Actor Property CurrentFollower Hidden
   Actor Function Get()
-    return CurrentFollower_var
+    return (GetNthAlias(1) as ReferenceAlias).GetReference() as Actor
   EndFunction
   Function Set(Actor aValue)
 		RecruitFollower(aValue)
@@ -112,7 +112,7 @@ EndEvent
 
 bool Function SendEvent(Keyword kywd, ObjectReference akRef2, int aiValue1, int aiValue2)
 	Location loc = Game.GetPlayer().GetCurrentLocation()
-	bool ret = kywd.SendStoryEventAndWait(loc, CurrentFollower_var, akRef2, aiValue1, aiValue2)
+	bool ret = kywd.SendStoryEventAndWait(loc, CurrentFollower, akRef2, aiValue1, aiValue2)
 	If(MCM.bDebug)
 		Debug.Notification("<JF> Event Started = " + ret)
 		Debug.Trace("[JF] Event Call with Keyword = " + kywd + " >> Started = " + ret)
@@ -149,40 +149,38 @@ h:DamageAffection(severe) = 4 << severe
 
 ; Validate this npc as a Follower and assign them a Joyful Follower
 bool Function RecruitFollower(Actor npc)
-  ReferenceAlias JF = GetNthAlias(1) as ReferenceAlias
-	ObjectReference prevJF = JF.GetReference()
-	Debug.Trace("[JF] Attempting to recuir new Joyful Follower: " + npc + "(Old Follower: " + JF.GetRef() + ")")
+	If (!npc)
+    Debug.Trace("[JF] Can't recruit a none reference", 1)
+		return false
+	EndIf
+  ReferenceAlias JFref = GetNthAlias(1) as ReferenceAlias
+	ObjectReference prevJF = JFref.GetReference()
+	Debug.Trace("[JF] Attempting to recruit new Joyful Follower: " + npc + "(Old Follower: " + prevJF + ")")
 	If (prevJF == npc)
 		return false
-	ElseIf(prevJF)
-		If(!DismissFollower(true, false))
-			Debug.Trace("[JF] Failed to recruit Follower, previous follower could not be dismissed")
-			return false
-		EndIf
+	ElseIf(prevJF && !DismissFollower(true, false))
+		Debug.Trace("[JF] Failed to recruit Follower, previous follower could not be dismissed")
+		return false
+	ElseIf(!ValidRecruit(npc))
+		Debug.Trace("[JF] Invalid recruit")
+		return false
 	EndIf
-	; If a new Follower, validate & recruit them
-	If(npc != none)
-		If(!ValidRecruit(npc))
-			return false
-		ElseIf(npc.IsInFaction(LockoutFaction))
-			npc.RemoveFromFaction(LockoutFaction)
-		EndIf
-		CurrentFollower_var = npc
-		; Affection, Affectionlevel, Gem, Severity, JFMainEvents data
-		If(GetAffection(npc) < 0.0)
-			StorageUtil.SetFloatValue(npc, "jfaffection", 0.0)
-		EndIf
-		UpdateLevel()
-		int gem = StorageUtil.GetIntValue(npc, "jffavgem", -1)
-		If(gem == -1)
-			gem = Utility.RandomInt(0, 4)
-			StorageUtil.SetIntValue(npc, "jffavgem", gem)
-		EndIf
-		FavGem.SetValue(gem)
-		GetSeverityGlobal().SetValue(StorageUtil.GetIntValue(CurrentFollower, "jfseverity", 0))
-		JFMainEvents.Singleton().LoadData(npc)
-		JF.ForceRefTo(npc)
+	JFref.ForceRefTo(npc)
+	If(npc.IsInFaction(LockoutFaction))
+		npc.RemoveFromFaction(LockoutFaction)
 	EndIf
+	If(GetAffection(npc) < 0.0)
+		StorageUtil.SetFloatValue(npc, "jfaffection", 0.0)
+	EndIf
+	UpdateLevel()
+	int gem = StorageUtil.GetIntValue(npc, "jffavgem", -1)
+	If(gem == -1)
+		gem = Utility.RandomInt(0, 4)
+		StorageUtil.SetIntValue(npc, "jffavgem", gem)
+	EndIf
+	FavGem.SetValue(gem)
+	GetSeverityGlobal().SetValue(StorageUtil.GetIntValue(npc, "jfseverity", 0))
+	JFMainEvents.Singleton().LoadData(npc)
 	npc.SendModEvent("JFFollowerRecruited")
 	return true
 EndFunction
@@ -191,7 +189,7 @@ bool Function ValidRecruit(Actor npc)
 		Debug.Messagebox("<JF Recruit Validation>\nFATAL: An Actor can only be assigned as Joyful Follower if they are Unique and NOT a child.")
 		Debug.Trace("[JF] FATAL: Attempted to recruit an unique Actor or Child into >> " + npc, 2)
 		return false
-	ElseIf(StorageUtil.GetIntValue(CurrentFollower, "jflockout", 0) == 1)
+	ElseIf(StorageUtil.GetIntValue(npc, "jflockout", 0) == 1)
 		Debug.Notification(npc.GetLeveledActorBase().GetName() + " doesn't want to get to know you any better.")
 		Debug.Trace("[JF] This Follower can no longer be assigned to become a Joyful Follower >> " + npc)
 		CurrentFollower.AddToFaction(LockoutFaction)
@@ -203,15 +201,14 @@ EndFunction
 ; Dismiss the current Follower
 bool Function DismissFollower(bool force, bool severe)
   If(CurrentFollower == none)
-    Debug.Trace("[JF] WARNING: Can't dismiss a none reference", 1)
+    Debug.Trace("[JF] Can't dismiss a none reference", 1)
+		return false
+	ElseIf(!force && Debt.Value > 0)
+    Debug.Trace("[JF] Dismissal is not forced; Player still has debt to pay")
 		return false
 	EndIf
-	ReferenceAlias folAlias = GetNthAlias(1) as ReferenceAlias
-	If(!force)
-		If(Debt.Value > 0)
-			return false
-		EndIf
-	EndIf
+	GlobalVariable affection = GetAffectionGlobal()
+	GlobalVariable severity =  GetSeverityGlobal()
 	If(severe)
 		CurrentFollower.SetRelationshipRank(Game.GetPlayer(), -2)
 		CurrentFollower.AddToFaction(LockoutFaction)
@@ -220,14 +217,15 @@ bool Function DismissFollower(bool force, bool severe)
 		StorageUtil.SetFloatValue(CurrentFollower, "jfAffectionLv", 0)
 	Else
 		StorageUtil.SetFloatValue(CurrentFollower, "jfAffection", GetAffection(CurrentFollower))
-		StorageUtil.SetFloatValue(CurrentFollower, "jfAffectionLv", GetAffectionGlobal().GetValue())
+		StorageUtil.SetFloatValue(CurrentFollower, "jfAffectionLv", affection.GetValue())
 	EndIf
-	StorageUtil.SetIntValue(CurrentFollower, "jfseverity", GetSeverityGlobal().GetValueInt())
+	StorageUtil.SetIntValue(CurrentFollower, "jfseverity", severity.GetValueInt())
+	affection.Value = 0
+	severity.Value = 0
 	Debt.Value = 0
 	JFMainEvents.Singleton().StoreData(CurrentFollower)
-	(GetNthAlias(1) as ReferenceAlias).Clear()
 	CurrentFollower.SendModEvent("JFDismissFollowerComplete", "", 0)
-	CurrentFollower = none
+	(GetNthAlias(1) as ReferenceAlias).Clear()
 	return true
 EndFunction
 
